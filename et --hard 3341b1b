@@ -1,0 +1,38 @@
+*   [33m1b0bea7[m[33m ([m[1;31morigin/booooo[m[33m)[m Merge branch 'booooo' of github.com:Latuuuuu/SourceCode into booooo
+[31m|[m[32m\[m  
+[31m|[m * [33maf4cefe[m new lobby
+* [32m|[m [33m6aff1de[m new main menu
+[32m|[m [32m|[m * [33mf924ea6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mlatuuu[m[33m, [m[1;31morigin/latuuu[m[33m)[m susu hp bar
+[32m|[m [32m|[m[32m/[m  
+[32m|[m[32m/[m[32m|[m   
+* [32m|[m [33m3341b1b[m combat
+* [32m|[m [33m1170e87[m good hitbox and dash
+* [32m|[m [33m3fc1662[m[33m ([m[1;31morigin/tungtungtung[m[33m, [m[1;32mtungtungtung[m[33m)[m each wave rule struct done
+* [32m|[m [33ma673ec7[m first create monsters
+* [32m|[m [33m16766af[m still cant atk in every direction
+* [32m|[m [33mda03271[m hitbox
+* [32m|[m [33mff22bd9[m trippi_tropi attack
+* [32m|[m [33ma6ea60f[m second monster
+* [32m|[m [33m7f9dfca[m image good
+[32m|[m[32m/[m  
+* [33m7b7eb36[m better atk
+* [33m3e91020[m can kill tung
+*   [33m519474a[m merged
+[34m|[m[35m\[m  
+[34m|[m * [33mec51112[m remove tree and floor and character
+[34m|[m * [33m7177afb[m include map system and random boss generation system
+[34m|[m *   [33mab11e34[m Merge branch 'tungtungtung' of github.com:Latuuuuu/SourceCode into booooo include map system and random boss generation system
+[34m|[m [36m|[m[1;31m\[m  
+[34m|[m [36m|[m * [33ma0a4dd8[m multi monster_factory
+[34m|[m [36m|[m * [33m97f7e0c[m[33m ([m[1;32mmaster[m[33m)[m random app
+[34m|[m * [1;31m|[m [33m83699b7[m It's the origin edition that map system is completed.
+[34m|[m [1;31m|[m[1;31m/[m  
+[34m|[m * [33m53a87c4[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m monster random appear
+[34m|[m * [33mae82b1d[m auto follow
+* [1;31m|[m [33m3a81da3[m can hit
+* [1;31m|[m [33m3e807a8[m atk direction
+* [1;31m|[m [33mdc4b2d4[m universal state
+[1;31m|[m[1;31m/[m  
+* [33m1b5e16b[m first try
+* [33m6bc9fd2[m susu can move
+* [33m72a73dd[m first commit -- allegro project create

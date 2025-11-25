@@ -3,6 +3,10 @@
 
 #include <allegro5/allegro5.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct ALGIF_ANIMATION ALGIF_ANIMATION;
 typedef struct ALGIF_FRAME ALGIF_FRAME;
 typedef struct ALGIF_PALETTE ALGIF_PALETTE;
@@ -27,12 +31,12 @@ struct ALGIF_ANIMATION {
     int width, height;
     int frames_count;
     int background_index;
-    int loop = 0; /* 0 = forever, 1~ = that many times */
+    int loop; /* -1 = no, 0 = forever, 1..65535 = that many times */
     ALGIF_PALETTE palette; 
     ALGIF_FRAME *frames; // Pointer to frame
-    double start_time = 0; // set the time when the gif start to display, 0 means not start yet
-    bool done = false; // if the gif finish display
-    int display_index = 0; // the index of the current frame of gif
+    double start_time; // set the time when the gif start to display
+    bool done; // if the gif finish display
+    int display_index; // the index of the current frame of gif
     int duration; // Duration of every frame
     ALLEGRO_BITMAP *store;
 };
@@ -47,7 +51,7 @@ struct ALGIF_FRAME {
 
     ALLEGRO_BITMAP *rendered;
 };
-bool algif_draw_gif(ALGIF_ANIMATION *gif, double x, double y, int flip);
+ALGIF_ANIMATION *algif_new_gif(char const *filename, int loop);
 ALGIF_ANIMATION *algif_load_raw(ALLEGRO_FILE *file);
 ALGIF_ANIMATION *algif_load_animation_f(ALLEGRO_FILE *file);
 ALGIF_ANIMATION *algif_load_animation(char const *filename);
@@ -61,5 +65,9 @@ void algif_blit(ALGIF_BITMAP *from, ALGIF_BITMAP *to, int xf, int yf, int xt, in
 ALLEGRO_BITMAP *algif_get_bitmap(ALGIF_ANIMATION *gif, double seconds);
 ALLEGRO_BITMAP *algif_get_frame_bitmap(ALGIF_ANIMATION *gif, int i);
 double algif_get_frame_duration(ALGIF_ANIMATION *gif, int i);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
