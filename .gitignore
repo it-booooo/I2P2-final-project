@@ -1,0 +1,55 @@
+# ===== C++ build artifacts =====
+*.o
+*.obj
+*.a
+*.lib
+*.exp
+*.dll.a
+*.pdb
+*.ilk
+*.log
+
+
+# ===== Build folders =====
+/build/
+/bin/
+/out/
+/dist/
+/debug/
+/release/
+
+# ===== VSCode settings =====
+.vscode/
+*.code-workspace
+
+# ===== OS-generated files =====
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+
+# ===== Project-specific =====
+# Ignore Doxygen output (if you ever generate it)
+docs/
+html/
+latex/
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ===== Allegro =====
+# Keep DLLs that are necessary to run the game
+# If you want to ignore dlls, uncomment:
+# *.dll
+
+# ===== Logs =====
+*.log
