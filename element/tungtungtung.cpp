@@ -26,7 +26,7 @@
    --------------------------------------------------*/
 Elements *New_tungtungtung(int label)
 {
-    tungtungtung *pDerivedObj = malloc(sizeof(tungtungtung));
+    tungtungtung *entity = static_cast<tungtungtung *>(malloc(sizeof(tungtungtung)));
     Elements     *pObj        = New_Elements(label);
 
     /* 載入靜態貼圖 */
@@ -34,42 +34,42 @@ Elements *New_tungtungtung(int label)
     for (int i = 0; i < 3; ++i) {
         char buffer[64];
         sprintf(buffer, "assets/image/tungtungtung_%s.png", state_string[i]);
-        pDerivedObj->img[i] = al_load_bitmap(buffer);
+        entity->img[i] = al_load_bitmap(buffer);
     }
 
     /* 幾何資料 */
-    pDerivedObj->width  = al_get_bitmap_width (pDerivedObj->img[0]);
-    pDerivedObj->height = al_get_bitmap_height(pDerivedObj->img[0]);
-    pDerivedObj->x = 300;
-    pDerivedObj->y = HEIGHT - pDerivedObj->height - 60;
-    pDerivedObj->base.hp   = 50;
-    pDerivedObj->base.side = 1;          /* 敵方陣營 */
+    entity->width  = al_get_bitmap_width (entity->img[0]);
+    entity->height = al_get_bitmap_height(entity->img[0]);
+    entity->x = 300;
+    entity->y = HEIGHT - entity->height - 60;
+    entity->base.hp   = 50;
+    entity->base.side = 1;          /* 敵方陣營 */
     
 
     /* 個別冷卻計時器初始化 */
-    pDerivedObj->attack_timer = 0;
+    entity->attack_timer = 0;
 
     /* 避開出生點太靠近玩家 */
     Elements *susu_elem = get_susu();
     susu *player = NULL;
-    if (susu_elem) player = (susu *)susu_elem->pDerivedObj;
+    if (susu_elem) player = (susu *)susu_elem->entity;
     do {
-        pDerivedObj->x = rand() % (WIDTH  - pDerivedObj->width);
-        pDerivedObj->y = rand() % (HEIGHT - pDerivedObj->height);
-    } while (player && fabs(pDerivedObj->x - player->x) < ARRIVE_EPSILON &&
-                       fabs(pDerivedObj->y - player->y) < ARRIVE_EPSILON);
+        entity->x = rand() % (WIDTH  - entity->width);
+        entity->y = rand() % (HEIGHT - entity->height);
+    } while (player && fabs(entity->x - player->x) < ARRIVE_EPSILON &&
+                       fabs(entity->y - player->y) < ARRIVE_EPSILON);
 
     /* 依最終座標建立 hitbox */
-    pDerivedObj->base.hitbox = New_Rectangle(pDerivedObj->x,
-                                             pDerivedObj->y,
-                                             pDerivedObj->x + pDerivedObj->width,
-                                             pDerivedObj->y + pDerivedObj->height);
+    entity->base.hitbox = New_Rectangle(entity->x,
+                                             entity->y,
+                                             entity->x + entity->width,
+                                             entity->y + entity->height);
 
-    pDerivedObj->dir   = false;  /* 預設面向左 */
-    pDerivedObj->state = STOP;
+    entity->dir   = false;  /* 預設面向左 */
+    entity->state = STOP;
 
     /* 綁定多型函式 */
-    pObj->pDerivedObj = pDerivedObj;
+    pObj->entity = entity;
     pObj->Draw        = tungtungtung_draw;
     pObj->Update      = tungtungtung_update;
     pObj->Interact    = tungtungtung_interact;
@@ -83,7 +83,7 @@ Elements *New_tungtungtung(int label)
    --------------------------------------------------*/
 void tungtungtung_update(Elements *self)
 {
-    tungtungtung *chara = self->pDerivedObj;
+    tungtungtung *chara = static_cast<tungtungtung *>(self->entity);
 
     /* 攻擊冷卻倒數 */
     if (chara->attack_timer > 0) chara->attack_timer--;
@@ -92,7 +92,7 @@ void tungtungtung_update(Elements *self)
     Elements *susu_elem = get_susu();
     if (!susu_elem) return;              /* 還沒生成 susu */
 
-    susu *target = (susu *)susu_elem->pDerivedObj;
+    susu *target = static_cast<susu *>(susu_elem->entity);
 
     /* 1) 取得雙方中心點 */
     float cx = chara->x + chara->width  * 0.5f;
@@ -176,7 +176,7 @@ void tungtungtung_update(Elements *self)
    --------------------------------------------------*/
 void tungtungtung_draw(Elements *self)
 {
-    tungtungtung *chara = self->pDerivedObj;
+    tungtungtung *chara = static_cast<tungtungtung *>(self->entity);
     ALLEGRO_BITMAP *bmp = chara->img[chara->state];
     if (!bmp) return;
 
@@ -199,7 +199,7 @@ void tungtungtung_interact(Elements *self) {
 void tungtungtung_destory(Elements *self)
 {
     if (!self) return;
-    tungtungtung *chara = self->pDerivedObj;
+    tungtungtung *chara = static_cast<tungtungtung *>(self->entity);
     for (int i = 0; i < 3; ++i) {
         if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
     }
@@ -214,7 +214,7 @@ void tungtungtung_destory(Elements *self)
    --------------------------------------------------*/
 void _tungtungtung_update_position(Elements *self, int dx, int dy)
 {
-    tungtungtung *chara = self->pDerivedObj;
+    tungtungtung *chara = static_cast<tungtungtung *>(self->entity);
 
     chara->x += dx;
     chara->y += dy;

@@ -4,13 +4,14 @@
 /*
    [floor object]
 */
-typedef struct _Floor
+class Floor : public Element
 {
+public:
     int x, y;          // the position of image
     int width, height; // the width and height of image
     ALLEGRO_BITMAP *img;
     int map_data[6][6];
-} Floor;
+};
 
 Elements *New_Floor(int label);
 void Floor_update(Elements *self);

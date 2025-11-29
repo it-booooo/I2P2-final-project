@@ -6,8 +6,9 @@
    [Earthquake
  object]
 */
-typedef struct _Earthquake
+class Earthquake
 {
+public:
     int x,y;          // the position of image
     int width, height; // the width and height of image
     //int vx,vy;             // the velocity of Earthquake
@@ -16,7 +17,7 @@ typedef struct _Earthquake
     int timer;
     ALLEGRO_BITMAP *img;
     Shape *hitbox; // the hitbox of object
-} Earthquake;
+};
 Elements *New_Earthquake(int label, int x, int y, int damage,int side);
 void Earthquake_update(Elements *self);
 void Earthquake_interact(Elements *self);

@@ -26,7 +26,7 @@ static void _trippi_update_position(Elements *self, int dx, int dy);
 /* ---------------- 建構 ---------------- */
 Elements *New_trippi_troppi(int label)
 {
-    trippi_troppi *pD = malloc(sizeof(trippi_troppi));
+    trippi_troppi *pD = static_cast<trippi_troppi *>(malloc(sizeof(trippi_troppi)));
     Elements      *pE = New_Elements(label);
 
     const char *state_s[3] = {"stop","move","atk"};
@@ -39,7 +39,7 @@ Elements *New_trippi_troppi(int label)
 
     /* 隨機出生遠離玩家 */
     Elements *plE = get_susu();
-    susu *pl = plE ? plE->pDerivedObj : NULL;
+    susu *pl = plE ? plE->entity : NULL;
     do {
         pD->x = rand()%(WIDTH-pD->width);
         pD->y = rand()%(HEIGHT-pD->height);
@@ -55,7 +55,7 @@ Elements *New_trippi_troppi(int label)
     pD->dir=false; pD->state=STOP; pD->cooldown=0;
 
     /* 綁函式 */
-    pE->pDerivedObj = pD;
+    pE->entity = pD;
     pE->Draw   = trippi_troppi_draw;
     pE->Update = trippi_troppi_update;
     pE->Interact = trippi_troppi_interact;
@@ -66,11 +66,11 @@ Elements *New_trippi_troppi(int label)
 /* ---------------- Update ---------------- */
 void trippi_troppi_update(Elements *self)
 {
-    trippi_troppi *ch = self->pDerivedObj;
+    trippi_troppi *ch = static_cast<trippi_troppi *>(self->entity);
     if (ch->cooldown>0) ch->cooldown--;
 
     Elements *plE = get_susu(); if(!plE) return;
-    susu *pl = plE->pDerivedObj;
+    susu *pl = plE->entity;
 
     int cx=ch->x+ch->width/2,  cy=ch->y+ch->height/2;
     int tx=pl->x+pl->width/2,  ty=pl->y+pl->height/2;
@@ -103,7 +103,7 @@ void trippi_troppi_update(Elements *self)
 
 void trippi_troppi_draw(Elements *self)
 {
-    trippi_troppi *ch=self->pDerivedObj;
+    trippi_troppi *ch=self->entity;
     ALLEGRO_BITMAP *bmp=ch->img[ch->state];
     if(!bmp) return;
     al_draw_bitmap(bmp,ch->x,ch->y,ch->dir?ALLEGRO_FLIP_HORIZONTAL:0);
@@ -111,13 +111,13 @@ void trippi_troppi_draw(Elements *self)
 void trippi_troppi_interact(Elements *self){}
 void trippi_troppi_destory(Elements *self)
 {
-    trippi_troppi *ch=self->pDerivedObj;
+    trippi_troppi *ch=self->entity;
     for(int i=0;i<3;++i) if(ch->img[i]) al_destroy_bitmap(ch->img[i]);
     free(ch->base.hitbox); free(ch); free(self);
 }
 static void _trippi_update_position(Elements *self,int dx,int dy)
 {
-    trippi_troppi *ch=self->pDerivedObj;
+    trippi_troppi *ch=self->entity;
     ch->x+=dx; ch->y+=dy;
     if(ch->x<0) ch->x=0;
     if(ch->y<0) ch->y=0;

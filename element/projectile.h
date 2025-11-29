@@ -5,14 +5,15 @@
 /*
    [Projectile object]
 */
-typedef struct _Projectile
+class Projectile
 {
+public:
     int x, y;          // the position of image
     int width, height; // the width and height of image
     int v;             // the velocity of projectile
     ALLEGRO_BITMAP *img;
     Shape *hitbox; // the hitbox of object
-} Projectile;
+};
 Elements *New_Projectile(int label, int x, int y, int v);
 void Projectile_update(Elements *self);
 void Projectile_interact(Elements *self);

@@ -7,14 +7,15 @@
 /*
    [tree object]
 */
-typedef struct _Tree
+class Tree
 {
+public:
     Damageable base;
     int x, y;          // the position of image
     int width, height; // the width and height of image
     ALLEGRO_BITMAP *img;
     //Shape *hitbox; // the hitbox of object
-} Tree;
+};
 Elements *New_Tree(int label);
 void Tree_update(Elements *self);
 void Tree_interact(Elements *self);

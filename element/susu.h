@@ -17,8 +17,9 @@
     MOVE,
     ATK
 } susuType;*/
-typedef struct _susu
+class susu : public Element
 {
+public:
     Damageable base;
     int x, y;
     int width, height;              // the width and height of image
@@ -33,7 +34,7 @@ typedef struct _susu
     int e_timer,q_timer;
     bool new_proj;
     //Shape *hitbox; // the hitbox of object
-} susu;
+};
 Elements *New_susu(int label);
 void susu_update(Elements *self);
 void susu_interact(Elements *self);

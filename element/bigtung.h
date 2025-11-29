@@ -12,8 +12,9 @@
 /*
    [bigtung object]
 */
-typedef struct
+class bigtung : public Element
 {
+public:
     Damageable base;
     int  x, y;
     int  width, height;             // image size
@@ -24,7 +25,7 @@ typedef struct
     int  anime_time;
     bool new_proj;                  // 目前沒用，可保留
     int  attack_timer;              // ★ 個別冷卻計時器 (frame)
-} bigtung;
+};
 
 Elements *New_bigtung(int label);
 void      bigtung_update(Elements *self);

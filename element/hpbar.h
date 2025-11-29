@@ -7,15 +7,15 @@
 /*
    [Hpbar object]
 */
-typedef struct _Hpbar
+class Hpbar : public Element
 {
+public:
     int x, y;          // the position of image
     int full_length;
     int full_hp,now_hp;
     ALLEGRO_FONT *font;
-    //Shape *hitbox; // the hitbox of object
     ALLEGRO_COLOR color;
-} Hpbar;
+};
 Elements *New_Hpbar(int label,int full_hp, int now_hp);
 void Hpbar_update(Elements *self);
 void Hpbar_interact(Elements *self);

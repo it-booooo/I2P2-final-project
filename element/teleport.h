@@ -5,13 +5,14 @@
 /*
    [teleport object]
 */
-typedef struct _Teleport
+class Teleport
 {
+public:
     int x, y;          // the position of image
     int width, height; // the width and height of image
     ALLEGRO_BITMAP *img;
     bool activate; // If the teleport be activated
-} Teleport;
+};
 Elements *New_Teleport(int label);
 void Teleport_update(Elements *self);
 void Teleport_interact(Elements *self);

@@ -9,20 +9,20 @@
 */
 Elements *New_Earthquake(int label, int x, int y, int damage,int side)
 {
-    Earthquake *pDerivedObj = (Earthquake *)malloc(sizeof(Earthquake));
+    Earthquake *entity = (Earthquake *)malloc(sizeof(Earthquake));
     Elements *pObj = New_Elements(label);
     // setting derived object member
-    pDerivedObj->img = al_load_bitmap("assets/image/earthquake.png");
-    pDerivedObj->width = al_get_bitmap_width(pDerivedObj->img);
-    pDerivedObj->height = al_get_bitmap_height(pDerivedObj->img);
-    pDerivedObj->x = x;
-    pDerivedObj->y = y;
-    pDerivedObj->damage = damage;
-    pDerivedObj->side = side;
-    pDerivedObj->timer = 30;
-    pDerivedObj->hitbox = New_Circle(pDerivedObj->x + pDerivedObj->width / 2,
-                                     pDerivedObj->y + pDerivedObj->height / 2,
-                                     min(pDerivedObj->width, pDerivedObj->height) / 2);
+    entity->img = al_load_bitmap("assets/image/earthquake.png");
+    entity->width = al_get_bitmap_width(entity->img);
+    entity->height = al_get_bitmap_height(entity->img);
+    entity->x = x;
+    entity->y = y;
+    entity->damage = damage;
+    entity->side = side;
+    entity->timer = 30;
+    entity->hitbox = New_Circle(entity->x + entity->width / 2,
+                                     entity->y + entity->height / 2,
+                                     min(entity->width, entity->height) / 2);
     // setting the interact object
     pObj->inter_obj[pObj->inter_len++] = tungtungtung_L;
     pObj->inter_obj[pObj->inter_len++] = Susu_L;
@@ -34,7 +34,7 @@ Elements *New_Earthquake(int label, int x, int y, int damage,int side)
     pObj->inter_obj[pObj->inter_len++] = crocodilo_L;
     pObj->inter_obj[pObj->inter_len++] = bigtung_L;
     // setting derived object function
-    pObj->pDerivedObj = pDerivedObj;
+    pObj->entity = entity;
     pObj->Update = Earthquake_update;
     pObj->Interact = Earthquake_interact;
     pObj->Draw = Earthquake_draw;
@@ -44,14 +44,14 @@ Elements *New_Earthquake(int label, int x, int y, int damage,int side)
 }
 void Earthquake_update(Elements *self)
 {
-    Earthquake *earthquake = (Earthquake *)(self->pDerivedObj);
+    Earthquake *earthquake = (Earthquake *)(self->entity);
     if(earthquake->timer>0) earthquake->timer --;
     else self->dele = true;
     _Earthquake_update_position(self, 0, 0);
 }
 void _Earthquake_update_position(Elements *self, float dx, float dy)
 {
-    /*Earthquake *Obj = ((Earthquake *)(self->pDerivedObj));
+    /*Earthquake *Obj = ((Earthquake *)(self->entity));
     Obj->x1 += dx;
     Obj->x2 += dx;
     Obj->y1 += dy;
@@ -62,7 +62,7 @@ void _Earthquake_update_position(Elements *self, float dx, float dy)
 }
 void Earthquake_interact(Elements *self)
 {
-    Earthquake *earthquake = (Earthquake *)(self->pDerivedObj);
+    Earthquake *earthquake = (Earthquake *)(self->entity);
     for (int j = 0; j < self->inter_len; j++)   //依序處理每種Label
     { 
         int inter_label = self->inter_obj[j];
@@ -70,8 +70,8 @@ void Earthquake_interact(Elements *self)
         for (int i = 0; i < labelEle.len; i++)  //依序處理同Label中的每個hitbox
         {
             Elements *tar = labelEle.arr[i];
-            Shape *tar_hitbox = ((Damageable *)tar->pDerivedObj)->hitbox;
-            if (tar_hitbox && tar_hitbox->overlap(tar_hitbox, earthquake->hitbox) && earthquake->side != ((Damageable *)tar->pDerivedObj)->side) {
+            Shape *tar_hitbox = ((Damageable *)tar->entity)->hitbox;
+            if (tar_hitbox && tar_hitbox->overlap(tar_hitbox, earthquake->hitbox) && earthquake->side != ((Damageable *)tar->entity)->side) {
                 DealDamageIfPossible(tar, earthquake->damage);
             }
         }
@@ -80,12 +80,12 @@ void Earthquake_interact(Elements *self)
 }
 void Earthquake_draw(Elements *self)
 {
-    Earthquake *Obj = ((Earthquake *)(self->pDerivedObj));
+    Earthquake *Obj = ((Earthquake *)(self->entity));
     al_draw_bitmap(Obj->img,Obj->x,Obj->y, 0);
 }
 void Earthquake_destory(Elements *self)
 {
-    Earthquake *Obj = ((Earthquake *)(self->pDerivedObj));
+    Earthquake *Obj = ((Earthquake *)(self->entity));
     al_destroy_bitmap(Obj->img);
     free(Obj->hitbox);
     free(Obj);

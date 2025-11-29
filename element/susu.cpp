@@ -29,7 +29,7 @@ Elements *get_susu(void) // CHANGED: accessor to retrieve the singleton pointer
 
 Elements *New_susu(int label)
 {
-    susu *pDerivedObj = (susu *)malloc(sizeof(susu));
+    susu *entity = (susu *)malloc(sizeof(susu));
     Elements *pObj = New_Elements(label);
     // setting derived object member
     // load susu images
@@ -38,38 +38,38 @@ Elements *New_susu(int label)
     {
         char buffer[50];
         sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        pDerivedObj->gif_status[i] = algif_new_gif(buffer, -1);
+        entity->gif_status[i] = algif_new_gif(buffer, -1);
     }
-    //pDerivedObj->img = al_load_bitmap("assets/image/susu_1.png");
+    //entity->img = al_load_bitmap("assets/image/susu_1.png");
     // load effective sound
     ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");
-    pDerivedObj->atk_Sound = al_create_sample_instance(sample);
-    al_set_sample_instance_playmode(pDerivedObj->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
-    al_attach_sample_instance_to_mixer(pDerivedObj->atk_Sound, al_get_default_mixer());
+    entity->atk_Sound = al_create_sample_instance(sample);
+    al_set_sample_instance_playmode(entity->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
+    al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
 
 
 
     // initial the geometric information of susu
-    pDerivedObj->width = pDerivedObj->gif_status[0]->width;
-    pDerivedObj->height = pDerivedObj->gif_status[0]->height;
-    pDerivedObj->x = 300;
-    pDerivedObj->y = HEIGHT - pDerivedObj->height - 60;
-    pDerivedObj->base.hitbox = New_Rectangle(pDerivedObj->x+200,
-                                        pDerivedObj->y+50,
-                                        pDerivedObj->x + pDerivedObj->width-200,
-                                        pDerivedObj->y + pDerivedObj->height-50);
-    pDerivedObj->base.hp=10000;                                    
-    pDerivedObj->base.full_hp=10000;
-    pDerivedObj->base.side=0;
-    pDerivedObj->dir = false; // true: face to right, false: face to left
-    pDerivedObj->damage = 80;
+    entity->width = entity->gif_status[0]->width;
+    entity->height = entity->gif_status[0]->height;
+    entity->x = 300;
+    entity->y = HEIGHT - entity->height - 60;
+    entity->base.hitbox = New_Rectangle(entity->x+200,
+                                        entity->y+50,
+                                        entity->x + entity->width-200,
+                                        entity->y + entity->height-50);
+    entity->base.hp=10000;                                    
+    entity->base.full_hp=10000;
+    entity->base.side=0;
+    entity->dir = false; // true: face to right, false: face to left
+    entity->damage = 80;
     // initial the animation component
-    pDerivedObj->state = STOP;
-    pDerivedObj->new_proj = false;
-    pDerivedObj->e_timer = 0;
-    pDerivedObj->q_timer = 0;
-    pObj->pDerivedObj = pDerivedObj;
+    entity->state = STOP;
+    entity->new_proj = false;
+    entity->e_timer = 0;
+    entity->q_timer = 0;
+    pObj->entity = entity;
     // setting derived object function
     pObj->Draw = susu_draw;
     pObj->Update = susu_update;
@@ -87,7 +87,7 @@ void susu_update(Elements *self)
 {
     // use the idea of finite state machine to deal with different state
     
-    susu *chara = ((susu *)(self->pDerivedObj));
+    susu *chara = ((susu *)(self->entity));
     if(chara->e_timer>0)chara->e_timer--;
     if(chara->q_timer>0)chara->q_timer--;
     int move_dis = 10;
@@ -330,7 +330,7 @@ void susu_update(Elements *self)
 void susu_draw(Elements *self)
 {
     // with the state, draw corresponding image
-    susu *chara = ((susu *)(self->pDerivedObj));
+    susu *chara = ((susu *)(self->entity));
     ALLEGRO_BITMAP *frame = algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
     //al_draw_bitmap(chara->img, chara->x, chara->y, ((chara->dir) ? ALLEGRO_FLIP_HORIZONTAL : 0));
     if (frame)
@@ -348,7 +348,7 @@ void susu_draw(Elements *self)
 }
 void susu_destroy(Elements *self)
 {
-    susu *Obj = ((susu *)(self->pDerivedObj));
+    susu *Obj = ((susu *)(self->entity));
     al_destroy_sample_instance(Obj->atk_Sound);
     //al_destroy_bitmap(Obj->img);
     for (int i = 0; i < 3; i++)
@@ -363,7 +363,7 @@ void susu_destroy(Elements *self)
 
 void _susu_update_position(Elements *self, int dx, int dy)
 {
-    susu *chara = ((susu *)(self->pDerivedObj));
+    susu *chara = ((susu *)(self->entity));
     if(chara->x + chara->width*0.5 == 0 && dx <0) dx =0;
     if(chara->x + chara->width*0.5 ==1800 && dx>0) dx =0;
     if(chara->y + chara->height - 200 == 0 && dy<0) dy =0;

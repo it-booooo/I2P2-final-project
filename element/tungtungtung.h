@@ -12,8 +12,9 @@
 /*
    [tungtungtung object]
 */
-typedef struct
+class tungtungtung : public Element
 {
+public:
     Damageable base;
     int  x, y;
     int  width, height;             // image size
@@ -24,7 +25,7 @@ typedef struct
     int  anime_time;
     bool new_proj;                  // 目前沒用，可保留
     int  attack_timer;              // ★ 個別冷卻計時器 (frame)
-} tungtungtung;
+};
 
 Elements *New_tungtungtung(int label);
 void      tungtungtung_update(Elements *self);
