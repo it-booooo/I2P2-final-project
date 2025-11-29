@@ -10,6 +10,7 @@
 #include "../global.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../algif5/algif.h"
 #include "../scene/gamescene.h"
 #include <allegro5/allegro_native_dialog.h>
@@ -353,7 +354,7 @@ void susu_destroy(Elements *self)
     //al_destroy_bitmap(Obj->img);
     for (int i = 0; i < 3; i++)
         algif_destroy_animation(Obj->gif_status[i]);
-    free(Obj->base.hitbox);
+    delete Obj->base.hitbox;
     free(Obj);
     free(self);
 }
@@ -371,8 +372,8 @@ void _susu_update_position(Elements *self, int dx, int dy)
     chara->x += dx;
     chara->y += dy;
     Shape *hitbox = chara->base.hitbox;
-    hitbox->update_center_x(hitbox, dx);
-    hitbox->update_center_y(hitbox, dy);
+    hitbox->update_center_x(hitbox->center_x() + dx);
+    hitbox->update_center_y(hitbox->center_y() + dy);
 }
 
 void susu_interact(Elements *self) {}

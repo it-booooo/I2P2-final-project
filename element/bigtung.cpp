@@ -6,6 +6,7 @@
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h" /* _Register_elements & Combat_L */
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"           /* WIDTH / HEIGHT 常數 */
 #include <math.h>
 #include <stdlib.h>
@@ -75,9 +76,9 @@ Elements *New_bigtung(int label)
 
     /* 依最終座標建立 hitbox */
     obj.base.hitbox = New_Rectangle(obj.x,
-                                    obj.y,
-                                    obj.x + obj.width,
-                                    obj.y + obj.height);
+                                 obj.y,
+                                 obj.x + obj.width,
+                                 obj.y + obj.height);
 
     obj.dir   = false;  /* 預設面向左 */
     obj.state = STOP;
@@ -222,7 +223,7 @@ void bigtung_destory(Elements *self)
         if (chara.img[i]) al_destroy_bitmap(chara.img[i]);
     }
     /* 釋放 hitbox 與物件本身 */
-    free(chara.base.hitbox);
+    delete chara.base.hitbox;
     free(&chara);
     free(self);
 }
@@ -249,6 +250,6 @@ void _bigtung_update_position(Elements *self, int dx, int dy)
     if (!hb) return;
 
     Shape &hitbox = *hb;
-    hitbox.update_center_x(&hitbox, dx);
-    hitbox.update_center_y(&hitbox, dy);
+    hitbox.update_center_x(hitbox.center_x() + dx);
+    hitbox.update_center_y(hitbox.center_y() + dy);
 }

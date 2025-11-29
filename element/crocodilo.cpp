@@ -5,6 +5,7 @@
 #include "atk.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"
 #include <math.h>
 #include <stdlib.h>
@@ -84,7 +85,7 @@ void crocodilo_update(Elements *self)
     if (ch->cooldown > 0) ch->cooldown--;
 
     Elements *plE = get_susu();          if (!plE) return;
-    susu     *pl  = plE->entity;
+    susu     *pl  = static_cast<susu *>(plE->entity);
 
     int cx = ch->x + ch->width  / 2,
         cy = ch->y + ch->height / 2;
@@ -210,7 +211,7 @@ void crocodilo_destory(Elements *self)
     crocodilo *ch = static_cast<crocodilo *>(self->entity);
     for (int i = 0; i < 3; ++i)
         if (ch->img[i]) al_destroy_bitmap(ch->img[i]);
-    free(ch->base.hitbox);
+    delete ch->base.hitbox;
     free(ch);
     free(self);
 }
@@ -227,6 +228,6 @@ static void _croco_update_position(Elements *self, int dx, int dy)
     if (ch->y > HEIGHT - ch->height)     ch->y = HEIGHT - ch->height;
 
     Shape *hb = ch->base.hitbox;
-    hb->update_center_x(hb, dx);
-    hb->update_center_y(hb, dy);
+    hb->update_center_x(hb->center_x() + dx);
+    hb->update_center_y(hb->center_y() + dy);
 }

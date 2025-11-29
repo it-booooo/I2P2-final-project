@@ -6,6 +6,7 @@
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"
 #include <math.h>
 #include <stdlib.h>
@@ -96,7 +97,7 @@ void capuccino_update(Elements *self)
 
         /* 移除 hitbox 變無敵 */
         if (c->base.hitbox) {
-            free(c->base.hitbox);
+            delete c->base.hitbox;
             c->base.hitbox = NULL;
         }
         return;                          /* 本禎結束 */
@@ -178,7 +179,7 @@ void capuccino_destory(Elements *self)
     capuccino *c = static_cast<capuccino *>(self->entity);
     for (int i = 0; i < 4; ++i)
         if (c->img[i]) al_destroy_bitmap(c->img[i]);
-    if (c->base.hitbox) free(c->base.hitbox);
+    if (c->base.hitbox) delete c->base.hitbox;
     free(c);
     free(self);
 }
@@ -196,7 +197,7 @@ void _capuccino_update_position(Elements *self, int dx, int dy)
 
     if (c->base.hitbox) {
         Shape *hb = c->base.hitbox;
-        hb->update_center_x(hb, dx);
-        hb->update_center_y(hb, dy);
+        hb->update_center_x(hb->center_x() + dx);
+        hb->update_center_y(hb->center_y() + dy);
     }
 }

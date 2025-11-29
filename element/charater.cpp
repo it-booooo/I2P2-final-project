@@ -5,6 +5,7 @@
 #include "projectile.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../algif5/algif.h"
 #include "../scene/gamescene.h"
 #include <stdio.h>
@@ -37,9 +38,9 @@ Elements *New_Character(int label)
     entity->x = 300;
     entity->y = HEIGHT - entity->height - 60;
     entity->hitbox = New_Rectangle(entity->x,
-                                        entity->y,
-                                        entity->x + entity->width,
-                                        entity->y + entity->height);
+                                   entity->y,
+                                   entity->x + entity->width,
+                                   entity->y + entity->height);
     entity->dir = false; // true: face to right, false: face to left
     // initial the animation component
     entity->state = STOP;
@@ -169,7 +170,7 @@ void Character_destory(Elements *self)
     al_destroy_sample_instance(Obj->atk_Sound);
     for (int i = 0; i < 3; i++)
         algif_destroy_animation(Obj->gif_status[i]);
-    free(Obj->hitbox);
+    delete Obj->hitbox;
     free(Obj);
     free(self);
 }
@@ -180,8 +181,8 @@ void _Character_update_position(Elements *self, int dx, int dy)
     chara->x += dx;
     chara->y += dy;
     Shape *hitbox = chara->hitbox;
-    hitbox->update_center_x(hitbox, dx);
-    hitbox->update_center_y(hitbox, dy);
+    hitbox->update_center_x(hitbox->center_x() + dx);
+    hitbox->update_center_y(hitbox->center_y() + dy);
 }
 
 void Character_interact(Elements *self) {}

@@ -6,6 +6,7 @@
 #include "atk.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"
 #include <math.h>
 #include <stdlib.h>
@@ -62,10 +63,10 @@ Elements *New_bananini(int label)
 /* Update：射 banana.png */
 void bananini_update(Elements *self)
 {
-    bananini *ch=self->entity;
+    bananini *ch=static_cast<bananini *>(self->entity);
     if(ch->cooldown>0) ch->cooldown--;
     Elements *plE=get_susu(); if(!plE) return;
-    susu *pl=plE->entity;
+    susu *pl=static_cast<susu *>(plE->entity);
 
     int cx=ch->x+ch->width/2, cy=ch->y+ch->height/2;
     int tx=pl->x+pl->width/2, ty=pl->y+pl->height/2;
@@ -108,7 +109,7 @@ void bananini_destory(Elements *self)
 {
     bananini *ch=self->entity;
     for(int i=0;i<3;++i) if(ch->img[i]) al_destroy_bitmap(ch->img[i]);
-    free(ch->base.hitbox); free(ch); free(self);
+    delete ch->base.hitbox; delete ch; free(self);
 }
 static void _banana_update_position(Elements *self,int dx,int dy)
 {
@@ -119,6 +120,6 @@ static void _banana_update_position(Elements *self,int dx,int dy)
     if(ch->x>WIDTH -ch->width ) ch->x=WIDTH -ch->width ;
     if(ch->y>HEIGHT-ch->height) ch->y=HEIGHT-ch->height;
     Shape *hb=ch->base.hitbox;
-    hb->update_center_x(hb,dx);
-    hb->update_center_y(hb,dy);
+    hb->update_center_x(hb->center_x() + dx);
+    hb->update_center_y(hb->center_y() + dy);
 }

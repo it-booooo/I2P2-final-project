@@ -6,6 +6,7 @@
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h" /* _Register_elements & Combat_L */
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"           /* WIDTH / HEIGHT 常數 */
 #include <math.h>
 #include <stdlib.h>
@@ -61,9 +62,9 @@ Elements *New_tungtungtung(int label)
 
     /* 依最終座標建立 hitbox */
     entity->base.hitbox = New_Rectangle(entity->x,
-                                             entity->y,
-                                             entity->x + entity->width,
-                                             entity->y + entity->height);
+                                        entity->y,
+                                        entity->x + entity->width,
+                                        entity->y + entity->height);
 
     entity->dir   = false;  /* 預設面向左 */
     entity->state = STOP;
@@ -204,7 +205,7 @@ void tungtungtung_destory(Elements *self)
         if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
     }
     /* 釋放 hitbox 與物件本身 */
-    free(chara->base.hitbox);
+    delete chara->base.hitbox;
     free(chara);
     free(self);
 }
@@ -227,6 +228,6 @@ void _tungtungtung_update_position(Elements *self, int dx, int dy)
 
     /* hitbox 同步 */
     Shape *hb = chara->base.hitbox;
-    hb->update_center_x(hb, dx);
-    hb->update_center_y(hb, dy);
+    hb->update_center_x(hb->center_x() + dx);
+    hb->update_center_y(hb->center_y() + dy);
 }

@@ -2,6 +2,7 @@
 #include "damageable.h"
 #include "tree.h"
 #include "../shapes/Circle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h"
 #include "../scene/sceneManager.h"
 
@@ -90,7 +91,7 @@ void Atk_set_image(Elements *self, const char *img_path)
     obj.width  = al_get_bitmap_width (obj.img);
     obj.height = al_get_bitmap_height(obj.img);
 
-    if (obj.hitbox) free(obj.hitbox);
+    if (obj.hitbox) delete obj.hitbox;
     obj.hitbox = New_Circle(obj.x + obj.width / 2,
                              obj.y + obj.height / 2,
                              (float)fmin(obj.width, obj.height) / 2);
@@ -114,8 +115,8 @@ void _Atk_update_position(Elements *self, float dx, float dy)
     if (!hit) return;
 
     Shape &hitbox = *hit;
-    hitbox.update_center_x(&hitbox, dx);
-    hitbox.update_center_y(&hitbox, dy);
+    hitbox.update_center_x(hitbox.center_x() + dx);
+    hitbox.update_center_y(hitbox.center_y() + dy);
 }
 
 /* ------------------------ Interact ------------------------ */
@@ -145,8 +146,8 @@ void Atk_interact(Elements *self)
 
             if (!tar_hit) continue;
 
-            Shape &tar_hitbox = *tar_hit;
-            if (!tar_hitbox.overlap(&tar_hitbox, atk.hitbox)) continue;
+        Shape &tar_hitbox = *tar_hit;
+        if (!atk.hitbox || !tar_hitbox.overlap(*atk.hitbox)) continue;
 
             int bullet_side = atk.side;
             int target_side = target_entity.side;
@@ -184,7 +185,7 @@ void Atk_destory(Elements *self)
     Elements &wrapper = *self;
     Atk &obj = *static_cast<Atk *>(wrapper.entity);
     if (obj.img)    al_destroy_bitmap(obj.img);
-    if (obj.hitbox) free(obj.hitbox);
+    if (obj.hitbox) delete obj.hitbox;
     free(wrapper.entity);
     free(self);
 }

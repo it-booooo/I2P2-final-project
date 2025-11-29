@@ -2,6 +2,7 @@
 #include "tree.h"
 #include "charater.h"
 #include "../shapes/Circle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 #include "allegro5/allegro_ttf.h"
@@ -42,8 +43,8 @@ void Ball_update(Elements *self)
     Shape *hitbox = Obj.hitbox;
     if (hitbox) {
         Shape &box = *hitbox;
-        box.update_center_x(&box, mouse.x - Obj.x);
-        box.update_center_y(&box, mouse.y - Obj.y);
+        box.update_center_x(box.center_x() + mouse.x - Obj.x);
+        box.update_center_y(box.center_y() + mouse.y - Obj.y);
     }
     Obj.x=mouse.x;
     Obj.y=mouse.y;
@@ -58,8 +59,8 @@ void _Ball_update_position(Elements *self, int dx, int dy)
     if (!hitbox) return;
 
     Shape &box = *hitbox;
-    box.update_center_x(&box, dx);
-    box.update_center_y(&box, dy);
+    box.update_center_x(box.center_x() + dx);
+    box.update_center_y(box.center_y() + dy);
 }
 void Ball_interact(Elements *self)
 {
@@ -88,7 +89,7 @@ void Ball_interact(Elements *self)
         if(Obj.hitbox && chara_hitbox)
         {
             Shape &ball_hitbox = *Obj.hitbox;
-            if (ball_hitbox.overlap(&ball_hitbox, chara_hitbox)) {
+            if (ball_hitbox.overlap(*chara_hitbox)) {
                 Obj.color = al_map_rgb(0,255,0);
             }
         }
@@ -100,7 +101,7 @@ void Ball_interact(Elements *self)
         else if(Obj.hitbox && tree_hitbox)
         {
             Shape &ball_hitbox = *Obj.hitbox;
-            if (ball_hitbox.overlap(&ball_hitbox, tree_hitbox)) {
+            if (ball_hitbox.overlap(*tree_hitbox)) {
                 Obj.color = al_map_rgb(0,0,255);
             }
         }
@@ -126,7 +127,7 @@ void Ball_destory(Elements *self)
 {
     Elements &wrapper = *self;
     Ball &Obj = *static_cast<Ball *>(wrapper.entity);
-    free(Obj.hitbox);
+    delete Obj.hitbox;
     free(&Obj);
     free(self);
 }

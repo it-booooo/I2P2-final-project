@@ -2,6 +2,7 @@
 #include "damageable.h"
 #include "tree.h"
 #include "../shapes/Circle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 /*
@@ -57,8 +58,8 @@ void _Earthquake_update_position(Elements *self, float dx, float dy)
     Obj->y1 += dy;
     Obj->y2 += dy;
     Shape *hitbox = Obj->hitbox;
-    hitbox->update_center_x(hitbox, dx);
-    hitbox->update_center_y(hitbox, dy);*/
+    hitbox->update_center_x(hitbox->center_x() + dx);
+    hitbox->update_center_y(hitbox->center_y() + dy);*/
 }
 void Earthquake_interact(Elements *self)
 {
@@ -71,7 +72,7 @@ void Earthquake_interact(Elements *self)
         {
             Elements *tar = labelEle.arr[i];
             Shape *tar_hitbox = ((Damageable *)tar->entity)->hitbox;
-            if (tar_hitbox && tar_hitbox->overlap(tar_hitbox, earthquake->hitbox) && earthquake->side != ((Damageable *)tar->entity)->side) {
+            if (tar_hitbox && earthquake->hitbox && tar_hitbox->overlap(*earthquake->hitbox) && earthquake->side != ((Damageable *)tar->entity)->side) {
                 DealDamageIfPossible(tar, earthquake->damage);
             }
         }
@@ -87,7 +88,7 @@ void Earthquake_destory(Elements *self)
 {
     Earthquake *Obj = ((Earthquake *)(self->entity));
     al_destroy_bitmap(Obj->img);
-    free(Obj->hitbox);
+    delete Obj->hitbox;
     free(Obj);
     free(self);
 }

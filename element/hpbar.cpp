@@ -47,8 +47,8 @@ void _Hpbar_update_position(Elements *self, int dx, int dy)
     Obj->x += dx;
     Obj->y += dy;
     Shape *hitbox = Obj->hitbox;
-    hitbox->update_center_x(hitbox, dx);
-    hitbox->update_center_y(hitbox, dy);*/
+    hitbox->update_center_x(hitbox->center_x() + dx);
+    hitbox->update_center_y(hitbox->center_y() + dy);*/
 }
 void Hpbar_interact(Elements *self)
 {
