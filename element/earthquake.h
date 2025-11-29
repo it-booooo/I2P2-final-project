@@ -6,7 +6,7 @@
    [Earthquake
  object]
 */
-class Earthquake
+class Earthquake : public Element
 {
 public:
     int x,y;          // the position of image

@@ -13,6 +13,7 @@
 #include "../shapes/ShapeFactory.h"
 #include "../algif5/algif.h"
 #include "../scene/gamescene.h"
+#include "../data/DataCenter.h"
 #include <allegro5/allegro_native_dialog.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -96,7 +97,8 @@ void susu_update(Elements *self)
     int space_co = 15;
     ALLEGRO_MOUSE_STATE state;
     al_get_mouse_state(&state);
-    if (key_state[ALLEGRO_KEY_SPACE]==0)
+    DataCenter *DC = DataCenter::get_instance();
+    if (DC->key_state[ALLEGRO_KEY_SPACE]==0)
     {
         space=0;
     }
@@ -106,21 +108,21 @@ void susu_update(Elements *self)
         {
             chara->state = COMBAT;
         }
-        else if (key_state[ALLEGRO_KEY_Q])
+        else if (DC->key_state[ALLEGRO_KEY_Q])
         {
             if(chara->q_timer <= 0)
             {
                 chara->state = ATK;
             }
         }
-        else if (key_state[ALLEGRO_KEY_E])
+        else if (DC->key_state[ALLEGRO_KEY_E])
         {
             if(chara->e_timer <=0)
             {
                 chara->state = EARTHQUAKE;
             }
         }
-        else if (key_state[ALLEGRO_KEY_SPACE] && space==0)
+        else if (DC->key_state[ALLEGRO_KEY_SPACE] && space==0)
         {
             if(chara->dir==0)  _susu_update_position(self, -1*move_dis*space_co, 0);
             else if(chara->dir==1) _susu_update_position(self, move_dis*space_co, 0);
@@ -129,22 +131,22 @@ void susu_update(Elements *self)
             space = 1;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_A])
+        else if (DC->key_state[ALLEGRO_KEY_A])
         {
             chara->dir = 0;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_D])
+        else if (DC->key_state[ALLEGRO_KEY_D])
         {
             chara->dir = 1;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_W])
+        else if (DC->key_state[ALLEGRO_KEY_W])
         {
             chara->dir = 2;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_S])
+        else if (DC->key_state[ALLEGRO_KEY_S])
         {
             chara->dir = 3;
             chara->state = MOVE;
@@ -161,21 +163,21 @@ void susu_update(Elements *self)
         {
             chara->state = COMBAT;
         }
-        else if (key_state[ALLEGRO_KEY_Q])
+        else if (DC->key_state[ALLEGRO_KEY_Q])
         {
             if(chara->q_timer <= 0)
             {
                 chara->state = ATK;
             }
         }
-        else if (key_state[ALLEGRO_KEY_E])
+        else if (DC->key_state[ALLEGRO_KEY_E])
         {
             if(chara->e_timer <=0)
             {
                 chara->state = EARTHQUAKE;
             }
         }
-        else if (key_state[ALLEGRO_KEY_SPACE] && space==0)
+        else if (DC->key_state[ALLEGRO_KEY_SPACE] && space==0)
         {
             if(chara->dir==0)  _susu_update_position(self, -1*move_dis*space_co, 0);
             else if(chara->dir==1) _susu_update_position(self, move_dis*space_co, 0);
@@ -184,25 +186,25 @@ void susu_update(Elements *self)
             space =1;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_A])
+        else if (DC->key_state[ALLEGRO_KEY_A])
         {
             chara->dir = 0;
             _susu_update_position(self, -1*move_dis, 0);
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_D])
+        else if (DC->key_state[ALLEGRO_KEY_D])
         {
             chara->dir = 1;
             _susu_update_position(self, move_dis, 0);
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_W])
+        else if (DC->key_state[ALLEGRO_KEY_W])
         {
             chara->dir = 2;
             _susu_update_position(self, 0, -1*move_dis);
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_S])
+        else if (DC->key_state[ALLEGRO_KEY_S])
         {
             chara->dir = 3;
             _susu_update_position(self, 0, move_dis);
@@ -225,8 +227,8 @@ void susu_update(Elements *self)
         {
             chara->q_timer=60;
             Elements *pro;
-            float dx = mouse.x - (chara->x + chara->width*0.5);
-            float dy = mouse.y - (chara->y + chara->height*0.5);
+            float dx = DC->mouse.x - (chara->x + chara->width*0.5);
+            float dy = DC->mouse.y - (chara->y + chara->height*0.5);
             float len = sqrt(dx * dx + dy * dy);
             /*const float base_speed   = 12.0;
             const float extra = 0.1;
@@ -257,8 +259,8 @@ void susu_update(Elements *self)
         if (chara->gif_status[COMBAT]->display_index == 3 && chara->new_proj == false)
         {
             Elements *pro;
-            float dx = mouse.x - (chara->x + chara->width*0.5);
-            float dy = mouse.y - (chara->y + chara->height*0.5);
+            float dx = DC->mouse.x - (chara->x + chara->width*0.5);
+            float dy = DC->mouse.y - (chara->y + chara->height*0.5);
 
             const int reach = 200;      // 攻擊距離
             const int thick = 300;      // 攻擊寬度
@@ -332,11 +334,12 @@ void susu_draw(Elements *self)
 {
     // with the state, draw corresponding image
     susu *chara = ((susu *)(self->entity));
+    DataCenter *DC = DataCenter::get_instance();
     ALLEGRO_BITMAP *frame = algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
     //al_draw_bitmap(chara->img, chara->x, chara->y, ((chara->dir) ? ALLEGRO_FLIP_HORIZONTAL : 0));
     if (frame)
     {
-        al_draw_bitmap(frame, chara->x, chara->y, (((mouse.x - (chara->x + chara->width*0.5))>0) ? ALLEGRO_FLIP_HORIZONTAL : 0));
+        al_draw_bitmap(frame, chara->x, chara->y, (((DC->mouse.x - (chara->x + chara->width*0.5))>0) ? ALLEGRO_FLIP_HORIZONTAL : 0));
     }
     if (chara->atk_Sound && chara->gif_status[chara->state] &&chara->state == ATK && chara->gif_status[chara->state]->display_index == 2)
     {

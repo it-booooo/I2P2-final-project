@@ -7,7 +7,7 @@
 /*
    [tree object]
 */
-class Tree
+class Tree : public Element
 {
 public:
     Damageable base;

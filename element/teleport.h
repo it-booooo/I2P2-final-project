@@ -5,7 +5,7 @@
 /*
    [teleport object]
 */
-class Teleport
+class Teleport : public Element
 {
 public:
     int x, y;          // the position of image
