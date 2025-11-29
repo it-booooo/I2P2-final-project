@@ -372,8 +372,10 @@ void _susu_update_position(Elements *self, int dx, int dy)
     chara->x += dx;
     chara->y += dy;
     Shape *hitbox = chara->base.hitbox;
-    hitbox->update_center_x(hitbox->center_x() + dx);
-    hitbox->update_center_y(hitbox->center_y() + dy);
+    const double cx = hitbox->center_x();
+    const double cy = hitbox->center_y();
+    hitbox->update_center_x(cx + dx);
+    hitbox->update_center_y(cy + dy);
 }
 
 void susu_interact(Elements *self) {}

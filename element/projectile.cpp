@@ -44,8 +44,10 @@ void _Projectile_update_position(Elements *self, int dx, int dy)
     Obj->x += dx;
     Obj->y += dy;
     Shape *hitbox = Obj->hitbox;
-    hitbox->update_center_x(hitbox->center_x() + dx);
-    hitbox->update_center_y(hitbox->center_y() + dy);
+    const double cx = hitbox->center_x();
+    const double cy = hitbox->center_y();
+    hitbox->update_center_x(cx + dx);
+    hitbox->update_center_y(cy + dy);
 }
 void Projectile_interact(Elements *self)
 {

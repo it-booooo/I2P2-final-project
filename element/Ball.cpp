@@ -42,9 +42,10 @@ void Ball_update(Elements *self)
     Ball &Obj = *static_cast<Ball *>(wrapper.entity);
     Shape *hitbox = Obj.hitbox;
     if (hitbox) {
-        Shape &box = *hitbox;
-        box.update_center_x(box.center_x() + mouse.x - Obj.x);
-        box.update_center_y(box.center_y() + mouse.y - Obj.y);
+        const double cx = hitbox->center_x();
+        const double cy = hitbox->center_y();
+        hitbox->update_center_x(cx + mouse.x - Obj.x);
+        hitbox->update_center_y(cy + mouse.y - Obj.y);
     }
     Obj.x=mouse.x;
     Obj.y=mouse.y;
@@ -58,9 +59,10 @@ void _Ball_update_position(Elements *self, int dx, int dy)
     Shape *hitbox = Obj.hitbox;
     if (!hitbox) return;
 
-    Shape &box = *hitbox;
-    box.update_center_x(box.center_x() + dx);
-    box.update_center_y(box.center_y() + dy);
+    const double cx = hitbox->center_x();
+    const double cy = hitbox->center_y();
+    hitbox->update_center_x(cx + dx);
+    hitbox->update_center_y(cy + dy);
 }
 void Ball_interact(Elements *self)
 {
