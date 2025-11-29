@@ -5,7 +5,7 @@
 /*
    [Projectile object]
 */
-class Projectile
+class Projectile : public Element
 {
 public:
     int x, y;          // the position of image

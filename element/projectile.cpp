@@ -5,6 +5,7 @@
 #include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
+#include <algorithm>
 /*
    [Projectile function]
 */
@@ -21,7 +22,7 @@ Elements *New_Projectile(int label, int x, int y, int v)
     entity->v = v;
     entity->hitbox = New_Circle(entity->x + entity->width / 2,
                                      entity->y + entity->height / 2,
-                                     min(entity->width, entity->height) / 2);
+                                     std::min(entity->width, entity->height) / 2);
     // setting the interact object
     pObj->inter_obj[pObj->inter_len++] = Tree_L;
     pObj->inter_obj[pObj->inter_len++] = Floor_L;

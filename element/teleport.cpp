@@ -2,6 +2,7 @@
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 #include "charater.h"
+#include "../data/DataCenter.h"
 #include <stdbool.h>
 /*
    [teleport function]
@@ -33,7 +34,8 @@ void Teleport_update(Elements *self)
 {
     Elements &wrapper = *self;
     Teleport &Obj = *reinterpret_cast<Teleport *>(wrapper.entity);
-    if (key_state[ALLEGRO_KEY_W])
+    DataCenter *DC = DataCenter::get_instance();
+    if (DC->key_state[ALLEGRO_KEY_W])
     {
         Obj.activate = true;
     }

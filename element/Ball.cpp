@@ -5,6 +5,7 @@
 #include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
+#include "../data/DataCenter.h"
 #include "allegro5/allegro_ttf.h"
 #include "allegro5/allegro_primitives.h"
 /*
@@ -16,9 +17,10 @@ Elements *New_Ball(int label)
     Elements *pObj = New_Elements(label);
     Elements &wrapper = *pObj;
     Ball &obj = *entity;
+    DataCenter *DC = DataCenter::get_instance();
 
-    obj.x = mouse.x;
-    obj.y = mouse.y;
+    obj.x = DC->mouse.x;
+    obj.y = DC->mouse.y;
     obj.r = 10;
     obj.color = al_map_rgb(255 ,0, 0);
     obj.hitbox = New_Circle(obj.x,
@@ -41,14 +43,15 @@ void Ball_update(Elements *self)
     Elements &wrapper = *self;
     Ball &Obj = *static_cast<Ball *>(wrapper.entity);
     Shape *hitbox = Obj.hitbox;
+    DataCenter *DC = DataCenter::get_instance();
     if (hitbox) {
         const double cx = hitbox->center_x();
         const double cy = hitbox->center_y();
-        hitbox->update_center_x(cx + mouse.x - Obj.x);
-        hitbox->update_center_y(cy + mouse.y - Obj.y);
+        hitbox->update_center_x(cx + DC->mouse.x - Obj.x);
+        hitbox->update_center_y(cy + DC->mouse.y - Obj.y);
     }
-    Obj.x=mouse.x;
-    Obj.y=mouse.y;
+    Obj.x = DC->mouse.x;
+    Obj.y = DC->mouse.y;
 }
 void _Ball_update_position(Elements *self, int dx, int dy)
 {
