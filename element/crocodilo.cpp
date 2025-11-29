@@ -85,7 +85,7 @@ void crocodilo_update(Elements *self)
     if (ch->cooldown > 0) ch->cooldown--;
 
     Elements *plE = get_susu();          if (!plE) return;
-    susu     *pl  = plE->entity;
+    susu     *pl  = static_cast<susu *>(plE->entity);
 
     int cx = ch->x + ch->width  / 2,
         cy = ch->y + ch->height / 2;

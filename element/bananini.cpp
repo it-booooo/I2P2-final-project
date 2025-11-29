@@ -63,10 +63,10 @@ Elements *New_bananini(int label)
 /* Update：射 banana.png */
 void bananini_update(Elements *self)
 {
-    bananini *ch=self->entity;
+    bananini *ch=static_cast<bananini *>(self->entity);
     if(ch->cooldown>0) ch->cooldown--;
     Elements *plE=get_susu(); if(!plE) return;
-    susu *pl=plE->entity;
+    susu *pl=static_cast<susu *>(plE->entity);
 
     int cx=ch->x+ch->width/2, cy=ch->y+ch->height/2;
     int tx=pl->x+pl->width/2, ty=pl->y+pl->height/2;
