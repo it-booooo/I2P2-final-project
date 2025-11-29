@@ -80,7 +80,7 @@ void Ball_interact(Elements *self)
         Tree *Obj2 = NULL;
         if (labelEle.len > 0 && labelEle.arr[0]) {
             Elements &tree_wrapper = *labelEle.arr[0];
-            Obj2 = static_cast<Tree *>(tree_wrapper.entity);
+            Obj2 = reinterpret_cast<Tree *>(tree_wrapper.entity);
         }
 
         Shape *chara_hitbox = NULL;

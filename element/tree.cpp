@@ -1,3 +1,4 @@
+#include <allegro5/allegro.h>
 #include "tree.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -34,13 +35,13 @@ void Tree_interact(Elements *self) {}
 void Tree_draw(Elements *self)
 {
     Elements &wrapper = *self;
-    Tree &Obj = *static_cast<Tree *>(wrapper.entity);
+    Tree &Obj = *reinterpret_cast<Tree *>(wrapper.entity);
     al_draw_bitmap(Obj.img, Obj.x, Obj.y, 0);
 }
 void Tree_destory(Elements *self)
 {
     Elements &wrapper = *self;
-    Tree &Obj = *static_cast<Tree *>(wrapper.entity);
+    Tree &Obj = *reinterpret_cast<Tree *>(wrapper.entity);
     al_destroy_bitmap(Obj.img);
     delete Obj.base.hitbox;
     free(&Obj);

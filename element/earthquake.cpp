@@ -1,3 +1,4 @@
+#include <allegro5/allegro.h>
 #include "earthquake.h"
 #include "damageable.h"
 #include "tree.h"
@@ -5,6 +6,7 @@
 #include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
+#include <algorithm>
 /*
    [Earthquake function]
 */

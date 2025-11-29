@@ -32,7 +32,7 @@ Elements *New_Teleport(int label)
 void Teleport_update(Elements *self)
 {
     Elements &wrapper = *self;
-    Teleport &Obj = *static_cast<Teleport *>(wrapper.entity);
+    Teleport &Obj = *reinterpret_cast<Teleport *>(wrapper.entity);
     if (key_state[ALLEGRO_KEY_W])
     {
         Obj.activate = true;

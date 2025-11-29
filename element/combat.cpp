@@ -1,3 +1,4 @@
+#include <allegro5/allegro.h>
 #include "combat.h"
 #include "damageable.h"
 #include "tree.h"
@@ -83,7 +84,7 @@ void Combat_interact(Elements *self)
             Elements &target_wrapper = *tar;
             if (!target_wrapper.entity) continue;
 
-            Damageable &target = *static_cast<Damageable *>(target_wrapper.entity);
+            Damageable &target = *reinterpret_cast<Damageable *>(target_wrapper.entity);
             Shape *tar_hitbox = target.hitbox;
             if (tar_hitbox && combat.hitbox) {
                 if (tar_hitbox->overlap(*combat.hitbox) && combat.side != target.side) {

@@ -1,3 +1,4 @@
+#include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
@@ -24,7 +25,7 @@ Elements *New_Character(int label)
     {
         char buffer[50];
         sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        entity->gif_status[i] = algif_new_gif(buffer, -1);
+        entity->gif_status[i] = algif_load_animation(buffer);
     }
     // load effective sound
     ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");

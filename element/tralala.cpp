@@ -14,6 +14,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <cstdio>
 
 /* ---------------- 參數 ---------------- */
 #define CHASE_SPEED             4.0f
@@ -143,7 +144,7 @@ void tralala_update(Elements *self)
                                          EARTHQUAKE_DAMAGE,
                                          chara->base.side);
         if (quake) {
-            Earthquake *eq = static_cast<Earthquake *>(quake->entity);
+            Earthquake *eq = reinterpret_cast<Earthquake *>(quake->entity);
             /* 換貼圖 */
             al_destroy_bitmap(eq->img);
             eq->img = al_load_bitmap("assets/image/waterwave.png");

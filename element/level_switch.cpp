@@ -6,6 +6,7 @@
 #include "allegro5/allegro_primitives.h"
 #include "susu.h"
 #include "../global.h"
+#include <cstdio>
 
 static LevelState state = LVL_RUNNING;
 static double     trans_timer = 0.0;             

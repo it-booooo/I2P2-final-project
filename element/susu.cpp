@@ -39,7 +39,7 @@ Elements *New_susu(int label)
     {
         char buffer[50];
         sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        entity->gif_status[i] = algif_new_gif(buffer, -1);
+        entity->gif_status[i] = algif_load_animation(buffer);
     }
     //entity->img = al_load_bitmap("assets/image/susu_1.png");
     // load effective sound

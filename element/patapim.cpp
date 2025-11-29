@@ -144,7 +144,7 @@ void patapim_update(Elements *self) {
             chara.base.side);
         if (quake){
              Elements &quake_wrapper = *quake;
-             Earthquake &eq = *static_cast<Earthquake *>(quake_wrapper.entity);
+             Earthquake &eq = *reinterpret_cast<Earthquake *>(quake_wrapper.entity);
             /* 換貼圖 */
             al_destroy_bitmap(eq.img);
             eq.img = al_load_bitmap("assets/image/boom.png");

@@ -5,7 +5,7 @@
 #include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h"
 #include "../scene/sceneManager.h"
-
+#include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +142,7 @@ void Atk_interact(Elements *self)
             Elements &tar = *tar_ptr;
             if (!tar.entity) continue;
 
-            Damageable &target_entity = *static_cast<Damageable *>(tar.entity);
+            Damageable &target_entity = *reinterpret_cast<Damageable *>(tar.entity);
             Shape *tar_hit = target_entity.hitbox;
 
             if (!tar_hit || !atk.hitbox) continue;
@@ -196,7 +196,7 @@ void DealDamageIfPossible(Elements *target, int damage)
     Elements &tar = *target;
     if (!tar.entity) return;
 
-    Damageable &dmg = *static_cast<Damageable *>(tar.entity);
+    Damageable &dmg = *reinterpret_cast<Damageable *>(tar.entity);
     if (!dmg.hitbox) return;
 
     dmg.hp -= damage;

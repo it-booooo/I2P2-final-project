@@ -11,6 +11,8 @@
 #include "../element/tralala.h"
 #include "../element/crocodilo.h"
 #include "../element/bigtung.h"
+#include <sceneManager.h>
+#include <scene.h>
 
 
 /* ---------------------------------------------------------

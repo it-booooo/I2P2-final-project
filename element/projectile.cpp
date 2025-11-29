@@ -1,3 +1,4 @@
+#include <allegro5/allegro.h>
 #include "projectile.h"
 #include "tree.h"
 #include "../shapes/Circle.h"
