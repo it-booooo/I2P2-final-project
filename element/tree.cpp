@@ -1,5 +1,6 @@
 #include "tree.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 /*
    [tree function]
 */
@@ -41,7 +42,7 @@ void Tree_destory(Elements *self)
     Elements &wrapper = *self;
     Tree &Obj = *static_cast<Tree *>(wrapper.entity);
     al_destroy_bitmap(Obj.img);
-    free(Obj.base.hitbox);
+    delete Obj.base.hitbox;
     free(&Obj);
     free(self);
 }
