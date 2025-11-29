@@ -28,46 +28,46 @@
 /* ---------------- 建構 ---------------- */
 Elements *New_tralala(int label)
 {
-    tralala *pDerivedObj = malloc(sizeof(tralala));
+    tralala *entity = static_cast<tralala *>(malloc(sizeof(tralala)));
     Elements *pObj = New_Elements(label);
 
     const char *state_string[3] = {"stop", "move", "atk"};
     for (int i = 0; i < 3; ++i) {
         char buf[64];
         sprintf(buf, "assets/image/tralala_%s.png", state_string[i]);
-        pDerivedObj->img[i] = al_load_bitmap(buf);
+        entity->img[i] = al_load_bitmap(buf);
     }
 
-    pDerivedObj->width  = al_get_bitmap_width (pDerivedObj->img[0]);
-    pDerivedObj->height = al_get_bitmap_height(pDerivedObj->img[0]);
-    pDerivedObj->x = 300;
-    pDerivedObj->y = HEIGHT - pDerivedObj->height - 60;
-    pDerivedObj->base.hp   = 1000;
-    pDerivedObj->base.side = 1;
+    entity->width  = al_get_bitmap_width (entity->img[0]);
+    entity->height = al_get_bitmap_height(entity->img[0]);
+    entity->x = 300;
+    entity->y = HEIGHT - entity->height - 60;
+    entity->base.hp   = 1000;
+    entity->base.side = 1;
 
-    pDerivedObj->attack_timer = 0;
-    pDerivedObj->quake_timer  = 0;
+    entity->attack_timer = 0;
+    entity->quake_timer  = 0;
 
     /* 避開出生點太靠近玩家 */
     Elements *susu_elem = get_susu();
-    susu *player = susu_elem ? (susu *)susu_elem->pDerivedObj : NULL;
+    susu *player = susu_elem ? (susu *)susu_elem->entity : NULL;
     do {
-        pDerivedObj->x = rand() % (WIDTH  - pDerivedObj->width);
-        pDerivedObj->y = rand() % (HEIGHT - pDerivedObj->height);
+        entity->x = rand() % (WIDTH  - entity->width);
+        entity->y = rand() % (HEIGHT - entity->height);
     } while (player &&
-             fabs(pDerivedObj->x - player->x) < ARRIVE_EPSILON &&
-             fabs(pDerivedObj->y - player->y) < ARRIVE_EPSILON);
+             fabs(entity->x - player->x) < ARRIVE_EPSILON &&
+             fabs(entity->y - player->y) < ARRIVE_EPSILON);
 
-    pDerivedObj->base.hitbox = New_Rectangle(pDerivedObj->x,
-                                             pDerivedObj->y,
-                                             pDerivedObj->x + pDerivedObj->width,
-                                             pDerivedObj->y + pDerivedObj->height);
+    entity->base.hitbox = New_Rectangle(entity->x,
+                                             entity->y,
+                                             entity->x + entity->width,
+                                             entity->y + entity->height);
 
-    pDerivedObj->dir = false;
-    pDerivedObj->state = STOP;
+    entity->dir = false;
+    entity->state = STOP;
 
     /* 綁定多型函式 */
-    pObj->pDerivedObj = pDerivedObj;
+    pObj->entity = entity;
     pObj->Draw        = tralala_draw;
     pObj->Update      = tralala_update;
     pObj->Interact    = tralala_interact;
@@ -78,14 +78,14 @@ Elements *New_tralala(int label)
 /* ---------------- 更新 ---------------- */
 void tralala_update(Elements *self)
 {
-    tralala *chara = self->pDerivedObj;
+    tralala *chara = static_cast<tralala *>(self->entity);
     if (chara->attack_timer > 0) chara->attack_timer--;
     if (chara->quake_timer  > 0) chara->quake_timer--;
 
     Elements *susu_elem = get_susu();
     if (!susu_elem) return;
 
-    susu *target = (susu *)susu_elem->pDerivedObj;
+    susu *target = static_cast<susu *>(susu_elem->entity);
 
     /* 中心點 */
     float cx = chara->x + chara->width  * 0.5f;
@@ -142,7 +142,7 @@ void tralala_update(Elements *self)
                                          EARTHQUAKE_DAMAGE,
                                          chara->base.side);
         if (quake) {
-            Earthquake *eq = (Earthquake *)quake->pDerivedObj;
+            Earthquake *eq = static_cast<Earthquake *>(quake->entity);
             /* 換貼圖 */
             al_destroy_bitmap(eq->img);
             eq->img = al_load_bitmap("assets/image/waterwave.png");
@@ -166,7 +166,7 @@ void tralala_update(Elements *self)
 /* ---------------- 繪圖 ---------------- */
 void tralala_draw(Elements *self)
 {
-    tralala *chara = self->pDerivedObj;
+    tralala *chara = static_cast<tralala *>(self->entity);
     ALLEGRO_BITMAP *bmp = chara->img[chara->state];
     if (!bmp) return;
     al_draw_bitmap(bmp,
@@ -185,7 +185,7 @@ void tralala_interact(Elements *self)
 void tralala_destory(Elements *self)
 {
     if (!self) return;
-    tralala *chara = self->pDerivedObj;
+    tralala *chara = static_cast<tralala *>(self->entity);
     for (int i = 0; i < 3; ++i)
         if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
     free(chara->base.hitbox);
@@ -196,7 +196,7 @@ void tralala_destory(Elements *self)
 /* ---------------- 私有：同步位置 & 邊界 ---------------- */
 void _tralala_update_position(Elements *self, int dx, int dy)
 {
-    tralala *chara = self->pDerivedObj;
+    tralala *chara = static_cast<tralala *>(self->entity);
     chara->x += dx;
     chara->y += dy;
 

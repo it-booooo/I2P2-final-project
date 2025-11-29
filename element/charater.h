@@ -16,8 +16,9 @@
     MOVE,
     ATK
 } CharacterType;*/
-typedef struct _Character
+class Character : public Element
 {
+public:
     int x, y;
     int width, height;              // the width and height of image
     int dir;                       // 1: face to right, 0: face to left, 2:face to up, 3:face to down
@@ -28,7 +29,7 @@ typedef struct _Character
     int anime_time; // indicate how long the animation
     bool new_proj;
     Shape *hitbox; // the hitbox of object
-} Character;
+};
 Elements *New_Character(int label);
 void Character_update(Elements *self);
 void Character_interact(Elements *self);

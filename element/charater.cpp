@@ -14,7 +14,7 @@
 */
 Elements *New_Character(int label)
 {
-    Character *pDerivedObj = (Character *)malloc(sizeof(Character));
+    Character *entity = (Character *)malloc(sizeof(Character));
     Elements *pObj = New_Elements(label);
     // setting derived object member
     // load character images
@@ -23,28 +23,28 @@ Elements *New_Character(int label)
     {
         char buffer[50];
         sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        pDerivedObj->gif_status[i] = algif_new_gif(buffer, -1);
+        entity->gif_status[i] = algif_new_gif(buffer, -1);
     }
     // load effective sound
     ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");
-    pDerivedObj->atk_Sound = al_create_sample_instance(sample);
-    al_set_sample_instance_playmode(pDerivedObj->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
-    al_attach_sample_instance_to_mixer(pDerivedObj->atk_Sound, al_get_default_mixer());
+    entity->atk_Sound = al_create_sample_instance(sample);
+    al_set_sample_instance_playmode(entity->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
+    al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
     // initial the geometric information of character
-    pDerivedObj->width = pDerivedObj->gif_status[0]->width;
-    pDerivedObj->height = pDerivedObj->gif_status[0]->height;
-    pDerivedObj->x = 300;
-    pDerivedObj->y = HEIGHT - pDerivedObj->height - 60;
-    pDerivedObj->hitbox = New_Rectangle(pDerivedObj->x,
-                                        pDerivedObj->y,
-                                        pDerivedObj->x + pDerivedObj->width,
-                                        pDerivedObj->y + pDerivedObj->height);
-    pDerivedObj->dir = false; // true: face to right, false: face to left
+    entity->width = entity->gif_status[0]->width;
+    entity->height = entity->gif_status[0]->height;
+    entity->x = 300;
+    entity->y = HEIGHT - entity->height - 60;
+    entity->hitbox = New_Rectangle(entity->x,
+                                        entity->y,
+                                        entity->x + entity->width,
+                                        entity->y + entity->height);
+    entity->dir = false; // true: face to right, false: face to left
     // initial the animation component
-    pDerivedObj->state = STOP;
-    pDerivedObj->new_proj = false;
-    pObj->pDerivedObj = pDerivedObj;
+    entity->state = STOP;
+    entity->new_proj = false;
+    pObj->entity = entity;
     // setting derived object function
     pObj->Draw = Character_draw;
     pObj->Update = Character_update;
@@ -55,7 +55,7 @@ Elements *New_Character(int label)
 void Character_update(Elements *self)
 {
     /*// use the idea of finite state machine to deal with different state
-    Character *chara = ((Character *)(self->pDerivedObj));
+    Character *chara = ((Character *)(self->entity));
     if (chara->state == STOP)
     {
         if (key_state[ALLEGRO_KEY_SPACE])
@@ -152,7 +152,7 @@ void Character_update(Elements *self)
 void Character_draw(Elements *self)
 {
     // with the state, draw corresponding image
-    Character *chara = ((Character *)(self->pDerivedObj));
+    Character *chara = ((Character *)(self->entity));
     ALLEGRO_BITMAP *frame = algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
     if (frame)
     {
@@ -165,7 +165,7 @@ void Character_draw(Elements *self)
 }
 void Character_destory(Elements *self)
 {
-    Character *Obj = ((Character *)(self->pDerivedObj));
+    Character *Obj = ((Character *)(self->entity));
     al_destroy_sample_instance(Obj->atk_Sound);
     for (int i = 0; i < 3; i++)
         algif_destroy_animation(Obj->gif_status[i]);
@@ -176,7 +176,7 @@ void Character_destory(Elements *self)
 
 void _Character_update_position(Elements *self, int dx, int dy)
 {
-    Character *chara = ((Character *)(self->pDerivedObj));
+    Character *chara = ((Character *)(self->entity));
     chara->x += dx;
     chara->y += dy;
     Shape *hitbox = chara->hitbox;

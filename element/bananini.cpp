@@ -25,7 +25,7 @@ static void _banana_update_position(Elements *self,int dx,int dy);
 /* 建構 */
 Elements *New_bananini(int label)
 {
-    bananini *pD=malloc(sizeof(bananini));
+    bananini *pD = static_cast<bananini *>(malloc(sizeof(bananini)));
     Elements *pE=New_Elements(label);
     const char *state_s[3]={"stop","move","atk"};
     for(int i=0;i<3;++i){
@@ -37,7 +37,7 @@ Elements *New_bananini(int label)
     pD->height=al_get_bitmap_height(pD->img[0]);
 
     Elements *plE=get_susu();
-    susu *pl=plE?(susu*)plE->pDerivedObj:NULL;
+    susu *pl=plE?(susu*)plE->entity:NULL;
     do{
         pD->x=rand()%(WIDTH -pD->width );
         pD->y=rand()%(HEIGHT-pD->height);
@@ -51,7 +51,7 @@ Elements *New_bananini(int label)
 
     pD->dir=false; pD->state=STOP; pD->cooldown=0;
 
-    pE->pDerivedObj=pD;
+    pE->entity=pD;
     pE->Draw   =bananini_draw;
     pE->Update =bananini_update;
     pE->Interact=bananini_interact;
@@ -62,10 +62,10 @@ Elements *New_bananini(int label)
 /* Update：射 banana.png */
 void bananini_update(Elements *self)
 {
-    bananini *ch=self->pDerivedObj;
+    bananini *ch=self->entity;
     if(ch->cooldown>0) ch->cooldown--;
     Elements *plE=get_susu(); if(!plE) return;
-    susu *pl=plE->pDerivedObj;
+    susu *pl=plE->entity;
 
     int cx=ch->x+ch->width/2, cy=ch->y+ch->height/2;
     int tx=pl->x+pl->width/2, ty=pl->y+pl->height/2;
@@ -98,7 +98,7 @@ void bananini_update(Elements *self)
 
 void bananini_draw(Elements *self)
 {
-    bananini *ch=self->pDerivedObj;
+    bananini *ch=self->entity;
     ALLEGRO_BITMAP *bmp=ch->img[ch->state];
     if(!bmp) return;
     al_draw_bitmap(bmp,ch->x,ch->y,ch->dir?ALLEGRO_FLIP_HORIZONTAL:0);
@@ -106,13 +106,13 @@ void bananini_draw(Elements *self)
 void bananini_interact(Elements *self){}
 void bananini_destory(Elements *self)
 {
-    bananini *ch=self->pDerivedObj;
+    bananini *ch=self->entity;
     for(int i=0;i<3;++i) if(ch->img[i]) al_destroy_bitmap(ch->img[i]);
     free(ch->base.hitbox); free(ch); free(self);
 }
 static void _banana_update_position(Elements *self,int dx,int dy)
 {
-    bananini *ch=self->pDerivedObj;
+    bananini *ch=self->entity;
     ch->x+=dx; ch->y+=dy;
     if(ch->x<0) ch->x=0;
     if(ch->y<0) ch->y=0;

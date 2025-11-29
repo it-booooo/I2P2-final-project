@@ -72,9 +72,17 @@ void Level_switch_DrawOverlay(void)
     
     if(level_up == 0)
     {
-        susu *chara = ((susu *)(get_susu()->pDerivedObj));
-        chara->base.hp = chara->base.full_hp;
-        chara->damage+=10;
+        Elements *susu_elem = get_susu();
+        susu *chara_ptr = NULL;
+        if (susu_elem) {
+            Elements &susu_wrapper = *susu_elem;
+            chara_ptr = static_cast<susu *>(susu_wrapper.entity);
+        }
+        if (chara_ptr) {
+            susu &chara = *chara_ptr;
+            chara.base.hp = chara.base.full_hp;
+            chara.damage += 10;
+        }
         level_up =1;
     }
     

@@ -25,7 +25,7 @@
 /* ---------- 建構 ---------- */
 Elements *New_capuccino(int label)
 {
-    capuccino *p = malloc(sizeof(capuccino));
+    capuccino *p = static_cast<capuccino *>(malloc(sizeof(capuccino)));
     Elements  *obj = New_Elements(label);
 
     const char *state_str[4] = { "stop", "move", "atk", "mug" };
@@ -48,7 +48,7 @@ Elements *New_capuccino(int label)
 
     /* 避免出生太近玩家 */
     Elements *susu_elem = get_susu();
-    susu *player = susu_elem ? (susu *)susu_elem->pDerivedObj : NULL;
+    susu *player = susu_elem ? (susu *)susu_elem->entity : NULL;
     do {
         p->x = rand() % (WIDTH  - p->width);
         p->y = rand() % (HEIGHT - p->height);
@@ -63,7 +63,7 @@ Elements *New_capuccino(int label)
     p->dir   = false;
     p->state = STOP;
 
-    obj->pDerivedObj = p;
+    obj->entity = p;
     obj->Draw     = capuccino_draw;
     obj->Update   = capuccino_update;
     obj->Interact = capuccino_interact;
@@ -74,7 +74,7 @@ Elements *New_capuccino(int label)
 /* ---------- 每禎更新 ---------- */
 void capuccino_update(Elements *self)
 {
-    capuccino *c = self->pDerivedObj;
+    capuccino *c = static_cast<capuccino *>(self->entity);
 
     /* ===== Mug 狀態處理 ===== */
     if (c->mug_timer > 0) {              /* 正在 mug */
@@ -107,7 +107,7 @@ void capuccino_update(Elements *self)
 
     Elements *susu_elem = get_susu();
     if (!susu_elem) return;
-    susu *target = (susu *)susu_elem->pDerivedObj;
+    susu *target = (susu *)susu_elem->entity;
 
     float cx = c->x + c->width  * 0.5f;
     float cy = c->y + c->height * 0.5f;
@@ -161,7 +161,7 @@ void capuccino_update(Elements *self)
 /* ---------- 繪圖 ---------- */
 void capuccino_draw(Elements *self)
 {
-    capuccino *c = self->pDerivedObj;
+    capuccino *c = static_cast<capuccino *>(self->entity);
     ALLEGRO_BITMAP *bmp = c->img[c->state];
     if (bmp)
         al_draw_bitmap(bmp, c->x, c->y,
@@ -175,7 +175,7 @@ void capuccino_interact(Elements *self) { }
 void capuccino_destory(Elements *self)
 {
     if (!self) return;
-    capuccino *c = self->pDerivedObj;
+    capuccino *c = static_cast<capuccino *>(self->entity);
     for (int i = 0; i < 4; ++i)
         if (c->img[i]) al_destroy_bitmap(c->img[i]);
     if (c->base.hitbox) free(c->base.hitbox);
@@ -186,7 +186,7 @@ void capuccino_destory(Elements *self)
 /* ---------- 私有：位置同步 ---------- */
 void _capuccino_update_position(Elements *self, int dx, int dy)
 {
-    capuccino *c = self->pDerivedObj;
+    capuccino *c = static_cast<capuccino *>(self->entity);
     c->x += dx; c->y += dy;
 
     if (c->x < 0)                      c->x = 0;

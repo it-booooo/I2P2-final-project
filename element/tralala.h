@@ -12,8 +12,9 @@
 /*
    [tralala object]
 */
-typedef struct
+class tralala : public Element
 {
+public:
     Damageable base;
     int  x, y;
     int  width, height;             // image size
@@ -25,7 +26,7 @@ typedef struct
     bool new_proj;                  // 目前沒用，可保留
     int  attack_timer;              // ★ 個別冷卻計時器 (frame)
     int quake_timer;
-} tralala;
+};
 
 Elements *New_tralala(int label);
 void      tralala_update(Elements *self);

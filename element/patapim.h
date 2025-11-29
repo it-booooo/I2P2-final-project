@@ -12,7 +12,9 @@
 /*
    [patapim object]
 */
-typedef struct {
+class patapim : public Element
+{
+public:
     Damageable base;
     int  x, y;
     int  width, height;
@@ -24,7 +26,7 @@ typedef struct {
     bool new_proj;
     int  attack_timer;
     int  quake_timer; // ★ 新增：地震攻擊冷卻時間
-} patapim;
+};
 
 Elements *New_patapim(int label);
 void      patapim_update(Elements *self);

@@ -13,8 +13,9 @@
 /*
    [Atk object] ― 所有飛行投射物共用
 */
-typedef struct _Atk
+class Atk : public Element
 {
+public:
     int x, y;              // 位置
     int width, height;     // 尺寸
     int vx, vy;            // 速度
@@ -22,7 +23,7 @@ typedef struct _Atk
     int side;              // 陣營 (SIDE_PLAYER / SIDE_ENEMY)
     ALLEGRO_BITMAP *img;   // 圖片
     Shape *hitbox;         // 碰撞盒
-} Atk;
+};
 
 /* ----------- 介面函式 ----------- */
 

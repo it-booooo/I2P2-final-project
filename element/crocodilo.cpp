@@ -39,7 +39,7 @@ static void _croco_bullet_update(Elements *self);
 /* ---------- Crocodilo 建構 ---------- */
 Elements *New_crocodilo(int label)
 {
-    crocodilo *pD = malloc(sizeof(crocodilo));
+    crocodilo *pD = static_cast<crocodilo *>(malloc(sizeof(crocodilo)));
     Elements  *pE = New_Elements(label);
 
     const char *state_s[3] = { "stop", "move", "atk" };
@@ -52,7 +52,7 @@ Elements *New_crocodilo(int label)
     pD->height = al_get_bitmap_height(pD->img[0]);
 
     Elements *plE = get_susu();
-    susu     *pl  = plE ? (susu *)plE->pDerivedObj : NULL;
+    susu     *pl  = plE ? (susu *)plE->entity : NULL;
     do {
         pD->x = rand() % (WIDTH  - pD->width );
         pD->y = rand() % (HEIGHT - pD->height);
@@ -69,7 +69,7 @@ Elements *New_crocodilo(int label)
     pD->state    = STOP;
     pD->cooldown = 0;
 
-    pE->pDerivedObj = pD;
+    pE->entity = pD;
     pE->Draw        = crocodilo_draw;
     pE->Update      = crocodilo_update;
     pE->Interact    = crocodilo_interact;
@@ -80,11 +80,11 @@ Elements *New_crocodilo(int label)
 /* ---------- 一般行為 / 射擊 ---------- */
 void crocodilo_update(Elements *self)
 {
-    crocodilo *ch = self->pDerivedObj;
+    crocodilo *ch = static_cast<crocodilo *>(self->entity);
     if (ch->cooldown > 0) ch->cooldown--;
 
     Elements *plE = get_susu();          if (!plE) return;
-    susu     *pl  = plE->pDerivedObj;
+    susu     *pl  = plE->entity;
 
     int cx = ch->x + ch->width  / 2,
         cy = ch->y + ch->height / 2;
@@ -133,7 +133,7 @@ void crocodilo_update(Elements *self)
 /* ---------- 登記追蹤用子彈 ---------- */
 static void _register_homing_bullet(Elements *proj)
 {
-    HomingEntry *node = malloc(sizeof(HomingEntry));
+    HomingEntry *node = static_cast<HomingEntry *>(malloc(sizeof(HomingEntry)));
     node->bullet = proj;
     node->frames = HOMING_FRAMES;
     node->next   = _homing_list;
@@ -163,8 +163,8 @@ static void _croco_bullet_update(Elements *self)
 
         Elements *plE = get_susu();
         if (plE) {
-            susu *pl   = plE->pDerivedObj;
-            Atk  *atk  = self->pDerivedObj;
+            susu *pl   = plE->entity;
+            Atk  *atk  = static_cast<Atk *>(self->entity);
 
             int cx = atk->x + atk->width  / 2,
                 cy = atk->y + atk->height / 2;
@@ -196,7 +196,7 @@ static void _croco_bullet_update(Elements *self)
 /* ---------- 其餘函式維持原樣 ---------- */
 void crocodilo_draw(Elements *self)
 {
-    crocodilo *ch = self->pDerivedObj;
+    crocodilo *ch = static_cast<crocodilo *>(self->entity);
     ALLEGRO_BITMAP *bmp = ch->img[ch->state];
     if (!bmp) return;
     al_draw_bitmap(bmp, ch->x, ch->y,
@@ -207,7 +207,7 @@ void crocodilo_interact(Elements *self) { /* 目前 Crocodilo 不做互動 */ }
 
 void crocodilo_destory(Elements *self)
 {
-    crocodilo *ch = self->pDerivedObj;
+    crocodilo *ch = static_cast<crocodilo *>(self->entity);
     for (int i = 0; i < 3; ++i)
         if (ch->img[i]) al_destroy_bitmap(ch->img[i]);
     free(ch->base.hitbox);
@@ -217,7 +217,7 @@ void crocodilo_destory(Elements *self)
 
 static void _croco_update_position(Elements *self, int dx, int dy)
 {
-    crocodilo *ch = self->pDerivedObj;
+    crocodilo *ch = static_cast<crocodilo *>(self->entity);
     ch->x += dx;  ch->y += dy;
 
     /* 場邊碰壁 */

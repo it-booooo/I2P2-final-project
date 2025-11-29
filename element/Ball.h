@@ -6,13 +6,14 @@
 /*
    [Ball object]
 */
-typedef struct _Ball
+class Ball : public Element
 {
+public:
     int x, y;          // the position of image
-    int r; // the width and height of image
-    Shape *hitbox; // the hitbox of object
+    int r;             // the width and height of image
+    Shape *hitbox;     // the hitbox of object
     ALLEGRO_COLOR color;
-} Ball;
+};
 Elements *New_Ball(int label);
 void Ball_update(Elements *self);
 void Ball_interact(Elements *self);

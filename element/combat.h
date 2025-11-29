@@ -5,16 +5,16 @@
 /*
    [Combat object]
 */
-typedef struct _Combat
+class Combat : public Element
 {
-    int x1, y1,x2,y2;          // the position of image
-    int width, height; // the width and height of image
-    //int vx,vy;             // the velocity of Combat
+public:
+    int x1, y1, x2, y2;        // the position of image
+    int width, height;         // the width and height of image
     int damage;
     int side;
     ALLEGRO_BITMAP *img;
-    Shape *hitbox; // the hitbox of object
-} Combat;
+    Shape *hitbox;             // the hitbox of object
+};
 Elements *New_Combat(int label, int x1, int y1, int x2,int y2, int damage,int side);
 void Combat_update(Elements *self);
 void Combat_interact(Elements *self);

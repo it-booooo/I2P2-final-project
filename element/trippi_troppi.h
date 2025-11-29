@@ -8,7 +8,9 @@
 #include <stdbool.h>
 #include "state.h"                        /* 若 STOP / MOVE / ATK 定義於此 */
 
-typedef struct {
+class trippi_troppi : public Element
+{
+public:
     Damageable      base;                 /* 放第一，Atk.c 轉型用 */
     int             x, y;
     int             width, height;
@@ -16,7 +18,7 @@ typedef struct {
     int             state;                /* STOP / MOVE / ATK */
     ALLEGRO_BITMAP *img[3];               /* 0=stop,1=move,2=attack (png) */
     int             cooldown;             /* 幀倒數：0 代表可射擊 */
-} trippi_troppi;
+};
 
 /* ---- 公開函式 ---- */
 Elements *New_trippi_troppi(int label);

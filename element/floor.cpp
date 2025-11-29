@@ -8,19 +8,19 @@
 */
 Elements *New_Floor(int label)
 {
-    Floor *pDerivedObj = (Floor *)malloc(sizeof(Floor));
+    Floor *entity = (Floor *)malloc(sizeof(Floor));
     Elements *pObj = New_Elements(label);
     // setting derived object member
-    pDerivedObj->img = al_load_bitmap("assets/image/floor.png");
-    pDerivedObj->width = al_get_bitmap_width(pDerivedObj->img);
-    pDerivedObj->height = al_get_bitmap_height(pDerivedObj->img);
-    _Floor_load_map(pDerivedObj);
-    pDerivedObj->x = 0;
-    pDerivedObj->y = 0;
+    entity->img = al_load_bitmap("assets/image/floor.png");
+    entity->width = al_get_bitmap_width(entity->img);
+    entity->height = al_get_bitmap_height(entity->img);
+    _Floor_load_map(entity);
+    entity->x = 0;
+    entity->y = 0;
     // setting the interact object
     pObj->inter_obj[pObj->inter_len++] = Character_L;
     // setting derived object function
-    pObj->pDerivedObj = pDerivedObj;
+    pObj->entity = entity;
     pObj->Draw = Floor_draw;
     pObj->Update = Floor_update;
     pObj->Interact = Floor_interact;
@@ -51,7 +51,7 @@ void Floor_interact(Elements *self)
 }
 void _Floor_interact_Character(Elements *self, Elements *tar)
 {
-    Character *chara = (Character *)(tar->pDerivedObj);
+    Character *chara = (Character *)(tar->entity);
     int right_limit = WIDTH - chara->width / 2;
     int left_limit = 0 - chara->width / 2;
     if (chara->x < left_limit)
@@ -65,7 +65,7 @@ void _Floor_interact_Character(Elements *self, Elements *tar)
 }
 void Floor_draw(Elements *self)
 {
-    Floor *Obj = ((Floor *)(self->pDerivedObj));
+    Floor *Obj = ((Floor *)(self->entity));
     for (int i = 0; i < 6; i++)
     {
         for (int j = 0; j < 6; j++)
@@ -79,7 +79,7 @@ void Floor_draw(Elements *self)
 }
 void Floor_destory(Elements *self)
 {
-    Floor *Obj = ((Floor *)(self->pDerivedObj));
+    Floor *Obj = ((Floor *)(self->entity));
     al_destroy_bitmap(Obj->img);
     free(Obj);
     free(self);
