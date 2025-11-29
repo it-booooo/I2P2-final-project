@@ -1,6 +1,7 @@
 #include "projectile.h"
 #include "tree.h"
 #include "../shapes/Circle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 /*
@@ -43,8 +44,8 @@ void _Projectile_update_position(Elements *self, int dx, int dy)
     Obj->x += dx;
     Obj->y += dy;
     Shape *hitbox = Obj->hitbox;
-    hitbox->update_center_x(hitbox, dx);
-    hitbox->update_center_y(hitbox, dy);
+    hitbox->update_center_x(hitbox->center_x() + dx);
+    hitbox->update_center_y(hitbox->center_y() + dy);
 }
 void Projectile_interact(Elements *self)
 {
@@ -77,7 +78,7 @@ void _Projectile_interact_Tree(Elements *self, Elements *tar)
 {
     Projectile *Obj = ((Projectile *)(self->entity));
     Tree *tree = ((Tree *)(tar->entity));
-    if (tree->base.hitbox->overlap(tree->base.hitbox, Obj->hitbox))
+    if (tree->base.hitbox && Obj->hitbox && tree->base.hitbox->overlap(*Obj->hitbox))
     {
         self->dele = true;
     }
@@ -94,7 +95,7 @@ void Projectile_destory(Elements *self)
 {
     Projectile *Obj = ((Projectile *)(self->entity));
     al_destroy_bitmap(Obj->img);
-    free(Obj->hitbox);
+    delete Obj->hitbox;
     free(Obj);
     free(self);
 }

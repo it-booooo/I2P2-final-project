@@ -7,6 +7,7 @@
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"
 #include <math.h>
 #include <stdlib.h>
@@ -63,9 +64,9 @@ Elements *New_patapim(int label) {
     } while (overlap_player);
 
     obj.base.hitbox = New_Rectangle(obj.x,
-                                             obj.y,
-                                             obj.x + obj.width,
-                                             obj.y + obj.height);
+                                 obj.y,
+                                 obj.x + obj.width,
+                                 obj.y + obj.height);
 
     obj.dir   = false;
     obj.state = STOP;
@@ -170,7 +171,7 @@ void patapim_destory(Elements *self) {
     for (int i = 0; i < 3; ++i) {
         if (chara.img[i]) al_destroy_bitmap(chara.img[i]);
     }
-    free(chara.base.hitbox);
+    delete chara.base.hitbox;
     free(wrapper.entity);
     free(self);
 }
@@ -187,6 +188,6 @@ void _patapim_update_position(Elements *self, int dx, int dy) {
     Shape *hb = chara.base.hitbox;
     if (!hb) return;
     Shape &hitbox = *hb;
-    hitbox.update_center_x(&hitbox, dx);
-    hitbox.update_center_y(&hitbox, dy);
+    hitbox.update_center_x(hitbox.center_x() + dx);
+    hitbox.update_center_y(hitbox.center_y() + dy);
 }

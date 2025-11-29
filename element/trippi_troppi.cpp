@@ -6,6 +6,7 @@
 #include "atk.h"           /* New_Atk() & Atk_set_image() */
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../global.h"
 #include <math.h>
 #include <stdlib.h>
@@ -113,7 +114,7 @@ void trippi_troppi_destory(Elements *self)
 {
     trippi_troppi *ch=self->entity;
     for(int i=0;i<3;++i) if(ch->img[i]) al_destroy_bitmap(ch->img[i]);
-    free(ch->base.hitbox); free(ch); free(self);
+    delete ch->base.hitbox; delete ch; free(self);
 }
 static void _trippi_update_position(Elements *self,int dx,int dy)
 {
@@ -124,6 +125,6 @@ static void _trippi_update_position(Elements *self,int dx,int dy)
     if(ch->x>WIDTH -ch->width ) ch->x=WIDTH -ch->width ;
     if(ch->y>HEIGHT-ch->height) ch->y=HEIGHT-ch->height;
     Shape *hb=ch->base.hitbox;
-    hb->update_center_x(hb,dx);
-    hb->update_center_y(hb,dy);
+    hb->update_center_x(hb->center_x() + dx);
+    hb->update_center_y(hb->center_y() + dy);
 }

@@ -8,6 +8,7 @@
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../shapes/Circle.h"
 #include "../global.h"
 #include <math.h>
@@ -153,7 +154,7 @@ void tralala_update(Elements *self)
             eq->x = centerX - eq->width  / 2;
             eq->y = centerY - eq->height / 2;
             /* 重建 hitbox，使中心即在 tralala 中心 */
-            free(eq->hitbox);
+            delete eq->hitbox;
             eq->hitbox = New_Circle(centerX,
                                     centerY,
                                     fminf(eq->width,eq->height) / 2);
@@ -188,7 +189,7 @@ void tralala_destory(Elements *self)
     tralala *chara = static_cast<tralala *>(self->entity);
     for (int i = 0; i < 3; ++i)
         if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
-    free(chara->base.hitbox);
+    delete chara->base.hitbox;
     free(chara);
     free(self);
 }
@@ -208,6 +209,6 @@ void _tralala_update_position(Elements *self, int dx, int dy)
 
     /* hitbox 同步 */
     Shape *hb = chara->base.hitbox;
-    hb->update_center_x(hb, dx);
-    hb->update_center_y(hb, dy);
+    hb->update_center_x(hb->center_x() + dx);
+    hb->update_center_y(hb->center_y() + dy);
 }

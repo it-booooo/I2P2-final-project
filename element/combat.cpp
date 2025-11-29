@@ -2,6 +2,7 @@
 #include "damageable.h"
 #include "tree.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/ShapeFactory.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 /*
@@ -62,8 +63,8 @@ void _Combat_update_position(Elements *self, float dx, float dy)
     if (!hitbox) return;
 
     Shape &box = *hitbox;
-    box.update_center_x(&box, dx);
-    box.update_center_y(&box, dy);
+    box.update_center_x(box.center_x() + dx);
+    box.update_center_y(box.center_y() + dy);
 }
 void Combat_interact(Elements *self)
 {
@@ -107,7 +108,7 @@ void Combat_destory(Elements *self)
     Elements &wrapper = *self;
     Combat &Obj = *static_cast<Combat *>(wrapper.entity);
     al_destroy_bitmap(Obj.img);
-    free(Obj.hitbox);
+    delete Obj.hitbox;
     free(&Obj);
     free(self);
 }
