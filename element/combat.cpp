@@ -86,7 +86,7 @@ void Combat_interact(Elements *self)
             Shape *tar_hitbox = target.hitbox;
             if (tar_hitbox && combat.hitbox) {
                 Shape &tar_box = *tar_hitbox;
-                if (tar_box.overlap(*combat.hitbox) && combat.side != target.side) {
+                if (tar_box.overlap(&tar_box, combat.hitbox) && combat.side != target.side) {
                     DealDamageIfPossible(tar, combat.damage);
                 }
             }

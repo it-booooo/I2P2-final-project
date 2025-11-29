@@ -89,7 +89,7 @@ void Ball_interact(Elements *self)
         if(Obj.hitbox && chara_hitbox)
         {
             Shape &ball_hitbox = *Obj.hitbox;
-            if (ball_hitbox.overlap(*chara_hitbox)) {
+            if (ball_hitbox.overlap(&ball_hitbox, chara_hitbox)) {
                 Obj.color = al_map_rgb(0,255,0);
             }
         }
@@ -101,7 +101,7 @@ void Ball_interact(Elements *self)
         else if(Obj.hitbox && tree_hitbox)
         {
             Shape &ball_hitbox = *Obj.hitbox;
-            if (ball_hitbox.overlap(*tree_hitbox)) {
+            if (ball_hitbox.overlap(&ball_hitbox, tree_hitbox)) {
                 Obj.color = al_map_rgb(0,0,255);
             }
         }
