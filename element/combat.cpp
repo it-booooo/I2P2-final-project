@@ -62,9 +62,10 @@ void _Combat_update_position(Elements *self, float dx, float dy)
     Shape *hitbox = Obj.hitbox;
     if (!hitbox) return;
 
-    Shape &box = *hitbox;
-    box.update_center_x(box.center_x() + dx);
-    box.update_center_y(box.center_y() + dy);
+    const double cx = hitbox->center_x();
+    const double cy = hitbox->center_y();
+    hitbox->update_center_x(cx + dx);
+    hitbox->update_center_y(cy + dy);
 }
 void Combat_interact(Elements *self)
 {
@@ -85,8 +86,7 @@ void Combat_interact(Elements *self)
             Damageable &target = *static_cast<Damageable *>(target_wrapper.entity);
             Shape *tar_hitbox = target.hitbox;
             if (tar_hitbox && combat.hitbox) {
-                Shape &tar_box = *tar_hitbox;
-                if (tar_box.overlap(*combat.hitbox) && combat.side != target.side) {
+                if (tar_hitbox->overlap(*combat.hitbox) && combat.side != target.side) {
                     DealDamageIfPossible(tar, combat.damage);
                 }
             }

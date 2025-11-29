@@ -114,9 +114,10 @@ void _Atk_update_position(Elements *self, float dx, float dy)
     Shape *hit = obj.hitbox;
     if (!hit) return;
 
-    Shape &hitbox = *hit;
-    hitbox.update_center_x(hitbox.center_x() + dx);
-    hitbox.update_center_y(hitbox.center_y() + dy);
+    const double cx = hit->center_x();
+    const double cy = hit->center_y();
+    hit->update_center_x(cx + dx);
+    hit->update_center_y(cy + dy);
 }
 
 /* ------------------------ Interact ------------------------ */
@@ -144,10 +145,8 @@ void Atk_interact(Elements *self)
             Damageable &target_entity = *static_cast<Damageable *>(tar.entity);
             Shape *tar_hit = target_entity.hitbox;
 
-            if (!tar_hit) continue;
-
-        Shape &tar_hitbox = *tar_hit;
-        if (!atk.hitbox || !tar_hitbox.overlap(*atk.hitbox)) continue;
+            if (!tar_hit || !atk.hitbox) continue;
+            if (!tar_hit->overlap(*atk.hitbox)) continue;
 
             int bullet_side = atk.side;
             int target_side = target_entity.side;

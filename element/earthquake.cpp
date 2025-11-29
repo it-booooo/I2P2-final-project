@@ -58,8 +58,10 @@ void _Earthquake_update_position(Elements *self, float dx, float dy)
     Obj->y1 += dy;
     Obj->y2 += dy;
     Shape *hitbox = Obj->hitbox;
-    hitbox->update_center_x(hitbox->center_x() + dx);
-    hitbox->update_center_y(hitbox->center_y() + dy);*/
+    const double cx = hitbox->center_x();
+    const double cy = hitbox->center_y();
+    hitbox->update_center_x(cx + dx);
+    hitbox->update_center_y(cy + dy);*/
 }
 void Earthquake_interact(Elements *self)
 {

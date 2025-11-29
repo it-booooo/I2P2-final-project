@@ -181,8 +181,10 @@ void _Character_update_position(Elements *self, int dx, int dy)
     chara->x += dx;
     chara->y += dy;
     Shape *hitbox = chara->hitbox;
-    hitbox->update_center_x(hitbox->center_x() + dx);
-    hitbox->update_center_y(hitbox->center_y() + dy);
+    const double cx = hitbox->center_x();
+    const double cy = hitbox->center_y();
+    hitbox->update_center_x(cx + dx);
+    hitbox->update_center_y(cy + dy);
 }
 
 void Character_interact(Elements *self) {}

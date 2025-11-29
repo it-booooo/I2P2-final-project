@@ -187,7 +187,8 @@ void _patapim_update_position(Elements *self, int dx, int dy) {
     if (chara.y > HEIGHT - chara.height) chara.y = HEIGHT - chara.height;
     Shape *hb = chara.base.hitbox;
     if (!hb) return;
-    Shape &hitbox = *hb;
-    hitbox.update_center_x(hitbox.center_x() + dx);
-    hitbox.update_center_y(hitbox.center_y() + dy);
+    const double cx = hb->center_x();
+    const double cy = hb->center_y();
+    hb->update_center_x(cx + dx);
+    hb->update_center_y(cy + dy);
 }

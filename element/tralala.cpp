@@ -209,6 +209,8 @@ void _tralala_update_position(Elements *self, int dx, int dy)
 
     /* hitbox 同步 */
     Shape *hb = chara->base.hitbox;
-    hb->update_center_x(hb->center_x() + dx);
-    hb->update_center_y(hb->center_y() + dy);
+    const double cx = hb->center_x();
+    const double cy = hb->center_y();
+    hb->update_center_x(cx + dx);
+    hb->update_center_y(cy + dy);
 }
