@@ -2,6 +2,7 @@
 #define GAME_H_INCLUDED
 
 #include <allegro5/allegro.h>
+#include "scene/scene.h"
 
 /**
  * @brief 遊戲主控類別
@@ -12,12 +13,13 @@
 class Game
 {
 public:
-    Game();             // 建構子：做原本的 game_init()
-    ~Game();            // 解構子：做原本的 game_destroy()
+    explicit Game(bool isTestMode); // 建構子：做原本的 game_init()
+    ~Game();                          // 解構子：做原本的 game_destroy()
 
     void execute();     // 主遊戲迴圈（原本的 execute(Game *self)）
 
 private:
+    void create_scene(int label);
     void game_init();   // 原本的 game_init(Game *self)
     bool game_update(); // 原本的 game_update(Game *self)
     void game_draw();   // 原本的 game_draw(Game *self)
@@ -31,6 +33,10 @@ private:
     ALLEGRO_TIMER *timer;              // 原本的 fps
     ALLEGRO_EVENT_QUEUE *event_queue;  // 原本的 event_queue
     ALLEGRO_EVENT event;               // 原本的全域 event
+
+    Scene *scene;
+    int window;
+    bool testMode;
 };
 
 #endif // GAME_H_INCLUDED

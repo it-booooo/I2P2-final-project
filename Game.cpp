@@ -21,13 +21,28 @@
  * @brief 建構子：設定標題、成員初始值，並呼叫 game_init()
  * 對應原本 New_Game() + game_init(Game *self)
  */
-Game::Game()
+namespace
+{
+    enum SceneLabel
+    {
+        Menu_L = 0,
+        GameScene_L = 1
+    };
+}
+
+Game::Game(bool isTestMode)
     : title("Into the Loop: Monsters of NTHU"),
       display(nullptr),
       timer(nullptr),
-      event_queue(nullptr)
+      event_queue(nullptr),
+      scene(nullptr),
+      window(0),
+      testMode(isTestMode)
 {
-    game_init();
+    if (!testMode)
+    {
+        game_init();
+    }
 }
 
 /**
@@ -35,7 +50,10 @@ Game::Game()
  */
 Game::~Game()
 {
-    game_destroy();
+    if (!testMode)
+    {
+        game_destroy();
+    }
 }
 
 /**
@@ -44,6 +62,11 @@ Game::~Game()
  */
 void Game::execute()
 {
+    if (testMode)
+    {
+        return;
+    }
+
     DataCenter *DC = DataCenter::get_instance();
 
     // main game loop
@@ -106,6 +129,11 @@ void Game::execute()
  */
 void Game::game_init()
 {
+    if (testMode)
+    {
+        return;
+    }
+
     DataCenter *DC = DataCenter::get_instance();
 
     std::printf("Game Initializing...\n");
@@ -169,26 +197,33 @@ void Game::game_init()
  */
 bool Game::game_update()
 {
-    // 完全沿用原本 sceneManager 的邏輯
-    scene->Update(scene);
-    if (scene->scene_end)
+    if (!scene)
     {
-        scene->Destroy(scene);
-        switch (window)
-        {
-        case 0:
-            create_scene(Menu_L);
-            break;
-        case 1:
-            create_scene(GameScene_L);
-            break;
-        case -1:
-            return false;
-        default:
-            break;
-        }
+        return false;
     }
-    return true;
+
+    scene->Update();
+    if (!scene->scene_end)
+    {
+        return true;
+    }
+
+    scene->Destroy();
+    switch (window)
+    {
+    case Menu_L:
+        create_scene(Menu_L);
+        break;
+    case GameScene_L:
+        create_scene(GameScene_L);
+        break;
+    case -1:
+        return false;
+    default:
+        break;
+    }
+
+    return scene != nullptr;
 }
 
 /**
@@ -198,7 +233,10 @@ void Game::game_draw()
 {
     // Flush the screen first.
     al_clear_to_color(al_map_rgb(100, 100, 100));
-    scene->Draw(scene);
+    if (scene)
+    {
+        scene->Draw();
+    }
     al_flip_display();
 }
 
@@ -207,6 +245,11 @@ void Game::game_draw()
  */
 void Game::game_destroy()
 {
+    if (testMode)
+    {
+        return;
+    }
+
     // Make sure you destroy all things
     if (event_queue)
     {
@@ -228,7 +271,22 @@ void Game::game_destroy()
 
     if (scene)
     {
-        scene->Destroy(scene);
+        scene->Destroy();
+        delete scene;
         scene = nullptr;
     }
+}
+
+void Game::create_scene(int label)
+{
+    if (scene)
+    {
+        scene->Destroy();
+        delete scene;
+        scene = nullptr;
+    }
+
+    scene = new Scene();
+    scene->Init();
+    window = label;
 }

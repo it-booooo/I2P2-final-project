@@ -6,7 +6,7 @@ ElementVec::ElementVec(Elements **elements, int length)
     len = length;
 }
 
-Scene::Scene() {}
+Scene::Scene() : scene_end(false) {}
 
 Scene::~Scene()
 {
@@ -17,6 +17,28 @@ void Scene::Init()
 {
     objects.clear();
     buffer.clear();
+}
+
+void Scene::Update()
+{
+    for (Elements *ele : objects)
+    {
+        if (ele && ele->Update)
+        {
+            ele->Update(ele);
+        }
+    }
+}
+
+void Scene::Draw()
+{
+    for (Elements *ele : objects)
+    {
+        if (ele && ele->Draw)
+        {
+            ele->Draw(ele);
+        }
+    }
 }
 
 void Scene::Destroy()
