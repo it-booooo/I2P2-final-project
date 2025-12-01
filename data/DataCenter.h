@@ -33,7 +33,6 @@ public:
     static constexpr int    HEIGHT = 1400;
     static constexpr int    GAME_FIELD = 600;
     static constexpr int    MAX_ELEMENT = 64;
-	double FPS;
 	int window_width, window_height;
 	/**
 	 * @brief The width and height of game area (not window size). That is, the region excludes menu region.

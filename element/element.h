@@ -1,6 +1,7 @@
 #ifndef ELEMENT_H_INCLUDED
 #define ELEMENT_H_INCLUDED
 
+#include <allegro5/allegro.h>
 #include "../data/DataCenter.h"
 
 class Element

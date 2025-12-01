@@ -9,8 +9,7 @@
 // fixed settings
 
 DataCenter::DataCenter()
-    : FPS(FPS),
-      window_width(WIDTH),
+    : window_width(WIDTH),
       window_height(HEIGHT),
       game_field_length(GAME_FIELD),
       mouse(0, 0)
