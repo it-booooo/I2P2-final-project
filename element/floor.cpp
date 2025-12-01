@@ -52,7 +52,7 @@ void Floor_interact(Elements *self)
 void _Floor_interact_Character(Elements *self, Elements *tar)
 {
     Character *chara = (Character *)(tar->entity);
-    int right_limit = WIDTH - chara->width / 2;
+    int right_limit = DataCenter::WIDTH - chara->width / 2;
     int left_limit = 0 - chara->width / 2;
     if (chara->x < left_limit)
     {

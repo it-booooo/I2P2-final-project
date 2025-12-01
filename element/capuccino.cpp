@@ -7,11 +7,9 @@
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../global.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 /* ---------- 參數 ---------- */
 #define CHASE_SPEED             5.0f
@@ -39,7 +37,7 @@ Elements *New_capuccino(int label)
     p->width  = al_get_bitmap_width (p->img[0]);
     p->height = al_get_bitmap_height(p->img[0]);
     p->x = 300;
-    p->y = HEIGHT - p->height - 60;
+    p->y = DataCenter::HEIGHT - p->height - 60;
     p->base.hp   = 50;
     p->base.side = 1;
 
@@ -51,8 +49,8 @@ Elements *New_capuccino(int label)
     Elements *susu_elem = get_susu();
     susu *player = susu_elem ? (susu *)susu_elem->entity : NULL;
     do {
-        p->x = rand() % (WIDTH  - p->width);
-        p->y = rand() % (HEIGHT - p->height);
+        p->x = rand() % (DataCenter::WIDTH  - p->width);
+        p->y = rand() % (DataCenter::HEIGHT - p->height);
     } while (player &&
              fabs(p->x - player->x) < ARRIVE_EPSILON &&
              fabs(p->y - player->y) < ARRIVE_EPSILON);
@@ -192,8 +190,8 @@ void _capuccino_update_position(Elements *self, int dx, int dy)
 
     if (c->x < 0)                      c->x = 0;
     if (c->y < 0)                      c->y = 0;
-    if (c->x > WIDTH  - c->width)      c->x = WIDTH  - c->width;
-    if (c->y > HEIGHT - c->height)     c->y = HEIGHT - c->height;
+    if (c->x > DataCenter::WIDTH  - c->width)      c->x = DataCenter::WIDTH  - c->width;
+    if (c->y > DataCenter::HEIGHT - c->height)     c->y = DataCenter::HEIGHT - c->height;
 
     if (c->base.hitbox) {
         Shape *hb = c->base.hitbox;

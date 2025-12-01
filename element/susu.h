@@ -6,7 +6,6 @@
 #include "../shapes/Shape.h"
 #include "../algif5/algif.h"
 #include "state.h"
-#include <stdbool.h>
 
 /*
    [susu object]

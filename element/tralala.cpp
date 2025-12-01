@@ -10,7 +10,6 @@
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
 #include "../shapes/Circle.h"
-#include "../global.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -43,7 +42,7 @@ Elements *New_tralala(int label)
     entity->width  = al_get_bitmap_width (entity->img[0]);
     entity->height = al_get_bitmap_height(entity->img[0]);
     entity->x = 300;
-    entity->y = HEIGHT - entity->height - 60;
+    entity->y = DataCenter::HEIGHT - entity->height - 60;
     entity->base.hp   = 1000;
     entity->base.side = 1;
 
@@ -54,8 +53,8 @@ Elements *New_tralala(int label)
     Elements *susu_elem = get_susu();
     susu *player = susu_elem ? (susu *)susu_elem->entity : NULL;
     do {
-        entity->x = rand() % (WIDTH  - entity->width);
-        entity->y = rand() % (HEIGHT - entity->height);
+        entity->x = rand() % (DataCenter::WIDTH  - entity->width);
+        entity->y = rand() % (DataCenter::HEIGHT - entity->height);
     } while (player &&
              fabs(entity->x - player->x) < ARRIVE_EPSILON &&
              fabs(entity->y - player->y) < ARRIVE_EPSILON);
@@ -205,8 +204,8 @@ void _tralala_update_position(Elements *self, int dx, int dy)
     /* 邊界限制 */
     if (chara->x < 0)                          chara->x = 0;
     if (chara->y < 0)                          chara->y = 0;
-    if (chara->x > WIDTH  - chara->width)      chara->x = WIDTH  - chara->width;
-    if (chara->y > HEIGHT - chara->height)     chara->y = HEIGHT - chara->height;
+    if (chara->x > DataCenter::WIDTH  - chara->width)      chara->x = DataCenter::WIDTH  - chara->width;
+    if (chara->y > DataCenter::HEIGHT - chara->height)     chara->y = DataCenter::HEIGHT - chara->height;
 
     /* hitbox 同步 */
     Shape *hb = chara->base.hitbox;

@@ -10,7 +10,6 @@
 #include "../algif5/algif.h"
 #include "../scene/gamescene.h"
 #include <stdio.h>
-#include <stdbool.h>
 /*
    [Character function]
 */
@@ -37,7 +36,7 @@ Elements *New_Character(int label)
     entity->width = entity->gif_status[0]->width;
     entity->height = entity->gif_status[0]->height;
     entity->x = 300;
-    entity->y = HEIGHT - entity->height - 60;
+    entity->y = DataCenter::HEIGHT - entity->height - 60;
     entity->hitbox = New_Rectangle(entity->x,
                                    entity->y,
                                    entity->x + entity->width,

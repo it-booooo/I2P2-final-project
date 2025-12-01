@@ -7,11 +7,9 @@
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../global.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include "../scene/gamescene.h"
 
 /* 參數同上 */
@@ -40,8 +38,8 @@ Elements *New_bananini(int label)
     Elements *plE=get_susu();
     susu *pl=plE?(susu*)plE->entity:NULL;
     do{
-        pD->x=rand()%(WIDTH -pD->width );
-        pD->y=rand()%(HEIGHT-pD->height);
+        pD->x=rand()%(DataCenter::WIDTH -pD->width );
+        pD->y=rand()%(DataCenter::HEIGHT-pD->height);
     }while(pl&&fabs(pD->x-pl->x)<ARRIVE_EPSILON&&
                 fabs(pD->y-pl->y)<ARRIVE_EPSILON);
 
@@ -99,7 +97,7 @@ void bananini_update(Elements *self)
 
 void bananini_draw(Elements *self)
 {
-    bananini *ch=self->entity;
+    bananini *ch=(bananini *)self->entity;
     ALLEGRO_BITMAP *bmp=ch->img[ch->state];
     if(!bmp) return;
     al_draw_bitmap(bmp,ch->x,ch->y,ch->dir?ALLEGRO_FLIP_HORIZONTAL:0);
@@ -107,18 +105,18 @@ void bananini_draw(Elements *self)
 void bananini_interact(Elements *self){}
 void bananini_destory(Elements *self)
 {
-    bananini *ch=self->entity;
+    bananini *ch=(bananini *)self->entity;
     for(int i=0;i<3;++i) if(ch->img[i]) al_destroy_bitmap(ch->img[i]);
     delete ch->base.hitbox; delete ch; free(self);
 }
 static void _banana_update_position(Elements *self,int dx,int dy)
 {
-    bananini *ch=self->entity;
+    bananini *ch=(bananini *)self->entity;
     ch->x+=dx; ch->y+=dy;
     if(ch->x<0) ch->x=0;
     if(ch->y<0) ch->y=0;
-    if(ch->x>WIDTH -ch->width ) ch->x=WIDTH -ch->width ;
-    if(ch->y>HEIGHT-ch->height) ch->y=HEIGHT-ch->height;
+    if(ch->x>DataCenter::WIDTH -ch->width ) ch->x=DataCenter::WIDTH -ch->width ;
+    if(ch->y>DataCenter::HEIGHT-ch->height) ch->y=DataCenter::HEIGHT-ch->height;
     Shape *hb=ch->base.hitbox;
     const double cx = hb->center_x();
     const double cy = hb->center_y();

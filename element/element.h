@@ -1,7 +1,7 @@
 #ifndef ELEMENT_H_INCLUDED
 #define ELEMENT_H_INCLUDED
-#include "../global.h"
-#include <stdbool.h>
+
+#include "../data/DataCenter.h"
 
 class Element
 {
@@ -15,6 +15,8 @@ typedef void (*fptrEleUpdate)(Elements *);
 typedef void (*fptrEleInteract)(Elements *);
 typedef void (*fptrEleDestroy)(Elements *);
 
+DataCenter *DC=DataCenter::get_instance();
+
 class Elements
 {
 public:
@@ -26,7 +28,7 @@ public:
     int id;    // the index in scene element list
     Element *entity;
     int inter_len;
-    int inter_obj[MAX_ELEMENT]; // The label for the obj you want to interact
+    int inter_obj[DataCenter::MAX_ELEMENT]; // The label for the obj you want to interact
     bool dele;                  // If the object need to be deleted
     // interface for function
     fptrEleDraw Draw;

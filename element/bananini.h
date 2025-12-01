@@ -5,7 +5,6 @@
 #include "element.h"
 #include "damageable.h"
 #include "../shapes/Shape.h"
-#include <stdbool.h>
 #include "state.h"                        /* 若 STOP / MOVE / ATK 定義於此 */
 
 class bananini : public Element

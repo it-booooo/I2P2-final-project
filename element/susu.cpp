@@ -7,7 +7,6 @@
 #include "atk.h"
 #include "combat.h"
 #include "earthquake.h"
-#include "../global.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -56,7 +55,7 @@ Elements *New_susu(int label)
     entity->width = entity->gif_status[0]->width;
     entity->height = entity->gif_status[0]->height;
     entity->x = 300;
-    entity->y = HEIGHT - entity->height - 60;
+    entity->y = DataCenter::HEIGHT - entity->height - 60;
     entity->base.hitbox = New_Rectangle(entity->x+200,
                                         entity->y+50,
                                         entity->x + entity->width-200,

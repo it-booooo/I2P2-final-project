@@ -1,6 +1,7 @@
 #ifndef LEVEL__SWITCH_H
 #define LEVEL__SWITCH_H
 #include "../scene/scene.h"
+#include "../data/DataCenter.h"
 
 
 

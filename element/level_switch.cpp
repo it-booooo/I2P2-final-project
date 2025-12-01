@@ -5,7 +5,6 @@
 #include "monster_factory.h"
 #include "allegro5/allegro_primitives.h"
 #include "susu.h"
-#include "../global.h"
 #include <cstdio>
 
 static LevelState state = LVL_RUNNING;
@@ -88,7 +87,7 @@ void Level_switch_DrawOverlay(void)
     }
     
 
-    if(level_no<5)al_draw_filled_rectangle(0,0,WIDTH,HEIGHT, al_map_rgb(0,0,0));
+    if(level_no<5)al_draw_filled_rectangle(0,0,DataCenter::WIDTH,DataCenter::HEIGHT, al_map_rgb(0,0,0));
     if(time_space - trans_timer > 1)
     {
         if (story_font) 
@@ -100,8 +99,8 @@ void Level_switch_DrawOverlay(void)
                     if(trans_timer < 5.0)
                     {
                         sprintf(story, "One morning, Susu woke up in his dorm\nand found himself transported to\nan alternate NTHU overrun by Italian monsters.\n Determined to finish his final programming project,\nhe bravely picked up his sword and set off on his quest.");
-                        //al_draw_text(level_font, al_map_rgb(255,255,255),WIDTH/2, 100, ALLEGRO_ALIGN_CENTRE, buf);
-                        al_draw_multiline_text(story_font,al_map_rgb(255,255,255),WIDTH/2, HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
+                        //al_draw_text(level_font, al_map_rgb(255,255,255),DataCenter::WIDTH/2, 100, ALLEGRO_ALIGN_CENTRE, buf);
+                        al_draw_multiline_text(story_font,al_map_rgb(255,255,255),DataCenter::WIDTH/2, DataCenter::HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
                     }
                     else
                     {
@@ -110,19 +109,19 @@ void Level_switch_DrawOverlay(void)
                     break;
                 case 1:
                     sprintf(story, "Before stepping onto the great lawn,\nSusu had heard of banana apes\nand tree monsters—something felt off.\nBananini leapt out laughing wildly,\nwhile Patapim rose like an ancient tree.\nSusu swung his sword while whispering while loop logic.");
-                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),WIDTH/2, HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
+                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),DataCenter::WIDTH/2, DataCenter::HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
                     break;
                 case 2:
                     sprintf(story, "As Susu approached Chenggong Lake,\nthe still water felt unnaturally quiet—like a trap.\nTrippi emerged, firing bubble arrows;\n Tralala burst out in Nike shoes.\nSusu rolled to dodge, like debugging a fatal error.");
-                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),WIDTH/2, HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
+                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),DataCenter::WIDTH/2, DataCenter::HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
                     break;
                 case 3:
                     sprintf(story, "Before entering the classroom,\nSusu thought he could finally code in peace\nbut even VS Code wasn’t safe.\nCappuccino flickered in and out of invincibility,\nlaughing maniacally. Crocodilo launched tracking missiles.\nSusu coded functions while dodging bugs and reptiles.");
-                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),WIDTH/2, HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
+                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),DataCenter::WIDTH/2, DataCenter::HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
                     break;
                 case 4:
                     sprintf(story, "Just as Susu thought it was over and moved to save his project,\nthe screen flickered—something familiar\nyet ominous approached.\nA colossal Tungtungtung crawled out,\nshrouded in debugging smoke.\nCan Susu withstand the final onslaught?");
-                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),WIDTH/2, HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
+                    al_draw_multiline_text(story_font,al_map_rgb(255,255,255),DataCenter::WIDTH/2, DataCenter::HEIGHT/2-200,2000,36,ALLEGRO_ALIGN_CENTRE,story);
                     break;
             }
         }
@@ -130,10 +129,10 @@ void Level_switch_DrawOverlay(void)
     else
     {
         if (level_font && level_no<5) {
-            al_draw_filled_rectangle(0,0,WIDTH,HEIGHT, al_map_rgb(0,0,0));
+            al_draw_filled_rectangle(0,0,DataCenter::WIDTH,DataCenter::HEIGHT, al_map_rgb(0,0,0));
             char buf[32];
             sprintf(buf, "LEVEL %d", level_no);
-            al_draw_text(level_font, al_map_rgb(255,255,255),WIDTH/2, HEIGHT/2-100, ALLEGRO_ALIGN_CENTRE, buf);
+            al_draw_text(level_font, al_map_rgb(255,255,255),DataCenter::WIDTH/2, DataCenter::HEIGHT/2-100, ALLEGRO_ALIGN_CENTRE, buf);
         }
     }
 }

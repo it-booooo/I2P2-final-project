@@ -127,7 +127,7 @@ void Atk_interact(Elements *self)
     Atk &atk = *static_cast<Atk *>(wrapper.entity);
 
     /* 超出場景刪除 */
-    if (atk.x < -atk.width || atk.x > WIDTH + atk.width) {
+    if (atk.x < -atk.width || atk.x > DataCenter::WIDTH + atk.width) {
         wrapper.dele = true;
         return;
     }

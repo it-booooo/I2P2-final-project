@@ -7,7 +7,6 @@
 #include "../scene/gamescene.h" /* _Register_elements & Combat_L */
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../global.h"           /* WIDTH / HEIGHT 常數 */
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,7 +41,7 @@ Elements *New_tungtungtung(int label)
     entity->width  = al_get_bitmap_width (entity->img[0]);
     entity->height = al_get_bitmap_height(entity->img[0]);
     entity->x = 300;
-    entity->y = HEIGHT - entity->height - 60;
+    entity->y = DataCenter::HEIGHT - entity->height - 60;
     entity->base.hp   = 50;
     entity->base.side = 1;          /* 敵方陣營 */
     
@@ -55,8 +54,8 @@ Elements *New_tungtungtung(int label)
     susu *player = NULL;
     if (susu_elem) player = (susu *)susu_elem->entity;
     do {
-        entity->x = rand() % (WIDTH  - entity->width);
-        entity->y = rand() % (HEIGHT - entity->height);
+        entity->x = rand() % (DataCenter::WIDTH  - entity->width);
+        entity->y = rand() % (DataCenter::HEIGHT - entity->height);
     } while (player && fabs(entity->x - player->x) < ARRIVE_EPSILON &&
                        fabs(entity->y - player->y) < ARRIVE_EPSILON);
 
@@ -223,8 +222,8 @@ void _tungtungtung_update_position(Elements *self, int dx, int dy)
     /* 邊界檢查 */
     if (chara->x < 0)                       chara->x = 0;
     if (chara->y < 0)                       chara->y = 0;
-    if (chara->x > WIDTH  - chara->width)   chara->x = WIDTH  - chara->width;
-    if (chara->y > HEIGHT - chara->height)  chara->y = HEIGHT - chara->height;
+    if (chara->x > DataCenter::WIDTH  - chara->width)   chara->x = DataCenter::WIDTH  - chara->width;
+    if (chara->y > DataCenter::HEIGHT - chara->height)  chara->y = DataCenter::HEIGHT - chara->height;
 
     /* hitbox 同步 */
     Shape *hb = chara->base.hitbox;

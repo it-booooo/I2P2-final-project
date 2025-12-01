@@ -16,7 +16,7 @@ Elements *New_Tree(int label)
     obj.width = al_get_bitmap_width(obj.img);
     obj.height = al_get_bitmap_height(obj.img);
     obj.x = 85;
-    obj.y = HEIGHT - obj.height;
+    obj.y = DataCenter::HEIGHT - obj.height;
     obj.base.hp=10;
     obj.base.hitbox = New_Rectangle(obj.x + obj.width / 3,
                                     obj.y + obj.height / 3,

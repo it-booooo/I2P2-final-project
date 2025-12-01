@@ -2,7 +2,6 @@
 #define SCENE_H
 
 #include <vector>
-#include "../global.h"
 #include "../element/element.h"
 
 /*

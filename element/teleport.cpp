@@ -3,7 +3,6 @@
 #include "../scene/sceneManager.h" // for scene variable
 #include "charater.h"
 #include "../data/DataCenter.h"
-#include <stdbool.h>
 /*
    [teleport function]
 */
@@ -17,8 +16,8 @@ Elements *New_Teleport(int label)
     obj.img = al_load_bitmap("assets/image/teleport.png");
     obj.width = al_get_bitmap_width(obj.img);
     obj.height = al_get_bitmap_height(obj.img);
-    obj.x = WIDTH - obj.width;
-    obj.y = HEIGHT - obj.height;
+    obj.x = DataCenter::WIDTH - obj.width;
+    obj.y = DataCenter::HEIGHT - obj.height;
     obj.activate = false;
     // setting the interact object
     wrapper.inter_obj[wrapper.inter_len++] = Character_L;

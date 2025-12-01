@@ -7,7 +7,6 @@
 #include "../scene/gamescene.h" /* _Register_elements & Combat_L */
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../global.h"           /* WIDTH / HEIGHT 常數 */
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,7 +43,7 @@ Elements *New_bigtung(int label)
     obj.width  = al_get_bitmap_width (obj.img[0]);
     obj.height = al_get_bitmap_height(obj.img[0]);
     obj.x = 300;
-    obj.y = HEIGHT - obj.height - 60;
+    obj.y = DataCenter::HEIGHT - obj.height - 60;
     obj.base.hp   = 1000;
     obj.base.side = 1;          /* 敵方陣營 */
     
@@ -61,8 +60,8 @@ Elements *New_bigtung(int label)
         player_ptr = static_cast<susu *>(susu_wrapper.entity);
     }
     do {
-        obj.x = rand() % (WIDTH  - obj.width);
-        obj.y = rand() % (HEIGHT - obj.height);
+        obj.x = rand() % (DataCenter::WIDTH  - obj.width);
+        obj.y = rand() % (DataCenter::HEIGHT - obj.height);
 
         need_retry = false;
         if (player_ptr) {
@@ -242,8 +241,8 @@ void _bigtung_update_position(Elements *self, int dx, int dy)
     /* 邊界檢查 */
     if (chara.x < 0)                       chara.x = 0;
     if (chara.y < 0)                       chara.y = 0;
-    if (chara.x > WIDTH  - chara.width)   chara.x = WIDTH  - chara.width;
-    if (chara.y > HEIGHT - chara.height)  chara.y = HEIGHT - chara.height;
+    if (chara.x > DataCenter::WIDTH  - chara.width)   chara.x = DataCenter::WIDTH  - chara.width;
+    if (chara.y > DataCenter::HEIGHT - chara.height)  chara.y = DataCenter::HEIGHT - chara.height;
 
     /* hitbox 同步 */
     Shape *hb = chara.base.hitbox;

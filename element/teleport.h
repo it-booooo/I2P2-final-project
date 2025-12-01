@@ -1,7 +1,6 @@
 #ifndef TELEPORT_H_INCLUDED
 #define TELEPORT_H_INCLUDED
 #include "element.h"
-#include <stdbool.h>
 /*
    [teleport object]
 */

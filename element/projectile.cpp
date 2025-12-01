@@ -75,7 +75,7 @@ void _Projectile_interact_Floor(Elements *self, Elements *tar)
     Projectile *Obj = ((Projectile *)(self->entity));
     if (Obj->x < 0 - Obj->width)
         self->dele = true;
-    else if (Obj->x > WIDTH + Obj->width)
+    else if (Obj->x > DataCenter::WIDTH + Obj->width)
         self->dele = true;
 }
 void _Projectile_interact_Tree(Elements *self, Elements *tar)

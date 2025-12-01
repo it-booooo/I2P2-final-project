@@ -4,7 +4,6 @@
 #include "element.h"
 #include "../shapes/Shape.h"
 #include "../algif5/algif.h"
-#include <stdbool.h>
 #include "state.h"
 
 /*

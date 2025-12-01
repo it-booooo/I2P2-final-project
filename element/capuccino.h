@@ -6,7 +6,6 @@
 #include "damageable.h"
 #include "../shapes/Shape.h"
 #include "../algif5/algif.h"
-#include <stdbool.h>
 #include "state.h"
 
 /* 新增狀態常數（不與 state.h 衝突） */

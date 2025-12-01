@@ -7,7 +7,6 @@
 #include "state.h"
 #include "../shapes/Shape.h"
 #include "../algif5/algif.h"
-#include <stdbool.h>
 
 /*
    [patapim object]

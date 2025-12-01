@@ -6,11 +6,9 @@
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../global.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include "../scene/gamescene.h"
 
 /* ---------- Crocodilo 參數（與原版相同） ---------- */
@@ -55,8 +53,8 @@ Elements *New_crocodilo(int label)
     Elements *plE = get_susu();
     susu     *pl  = plE ? (susu *)plE->entity : NULL;
     do {
-        pD->x = rand() % (WIDTH  - pD->width );
-        pD->y = rand() % (HEIGHT - pD->height);
+        pD->x = rand() % (DataCenter::WIDTH  - pD->width );
+        pD->y = rand() % (DataCenter::HEIGHT - pD->height);
     } while (pl && fabs(pD->x - pl->x) < ARRIVE_EPSILON &&
                    fabs(pD->y - pl->y) < ARRIVE_EPSILON);
 
@@ -164,7 +162,7 @@ static void _croco_bullet_update(Elements *self)
 
         Elements *plE = get_susu();
         if (plE) {
-            susu *pl   = plE->entity;
+            susu *pl   = static_cast<susu *>(plE->entity);
             Atk  *atk  = static_cast<Atk *>(self->entity);
 
             int cx = atk->x + atk->width  / 2,
@@ -224,8 +222,8 @@ static void _croco_update_position(Elements *self, int dx, int dy)
     /* 場邊碰壁 */
     if (ch->x < 0)                       ch->x = 0;
     if (ch->y < 0)                       ch->y = 0;
-    if (ch->x > WIDTH  - ch->width )     ch->x = WIDTH  - ch->width ;
-    if (ch->y > HEIGHT - ch->height)     ch->y = HEIGHT - ch->height;
+    if (ch->x > DataCenter::WIDTH  - ch->width )     ch->x = DataCenter::WIDTH  - ch->width ;
+    if (ch->y > DataCenter::HEIGHT - ch->height)     ch->y = DataCenter::HEIGHT - ch->height;
 
     Shape *hb = ch->base.hitbox;
     const double cx = hb->center_x();

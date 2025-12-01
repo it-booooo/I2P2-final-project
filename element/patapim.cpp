@@ -8,7 +8,6 @@
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../global.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,7 +37,7 @@ Elements *New_patapim(int label) {
     obj.width  = al_get_bitmap_width (obj.img[0]);
     obj.height = al_get_bitmap_height(obj.img[0]);
     obj.x = 300;
-    obj.y = HEIGHT - obj.height - 60;
+    obj.y = DataCenter::HEIGHT - obj.height - 60;
     obj.base.hp   = 50;
     obj.base.side = 1;
 
@@ -53,8 +52,8 @@ Elements *New_patapim(int label) {
     }
     bool overlap_player;
     do {
-        obj.x = rand() % (WIDTH  - obj.width);
-        obj.y = rand() % (HEIGHT - obj.height);
+        obj.x = rand() % (DataCenter::WIDTH  - obj.width);
+        obj.y = rand() % (DataCenter::HEIGHT - obj.height);
         overlap_player = false;
         if (player) {
             susu &player_ref = *player;
@@ -183,8 +182,8 @@ void _patapim_update_position(Elements *self, int dx, int dy) {
     chara.y += dy;
     if (chara.x < 0) chara.x = 0;
     if (chara.y < 0) chara.y = 0;
-    if (chara.x > WIDTH - chara.width) chara.x = WIDTH - chara.width;
-    if (chara.y > HEIGHT - chara.height) chara.y = HEIGHT - chara.height;
+    if (chara.x > DataCenter::WIDTH - chara.width) chara.x = DataCenter::WIDTH - chara.width;
+    if (chara.y > DataCenter::HEIGHT - chara.height) chara.y = DataCenter::HEIGHT - chara.height;
     Shape *hb = chara.base.hitbox;
     if (!hb) return;
     const double cx = hb->center_x();
