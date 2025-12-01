@@ -11,33 +11,40 @@
 class Game
 {
 public:
-	void execute();
+    // 主迴圈
+    void execute();
+
 public:
-	Game(bool testMode = false);
-	~Game();
-	void game_init();
-	bool game_update();
-	void game_draw();
+    // testMode = true 時，不建立 display / timer / event_queue，只做 Allegro 初始化
+    Game(bool testMode = false);
+    ~Game();
+
+    void game_init();
+    bool game_update();
+    void game_draw();
+
 private:
-	/**
-	 * @brief States of the game process in game_update.
-	 * @see Game::game_update()
-	 */
-	enum class STATE {
-		START, // -> LEVEL
-		LEVEL, // -> PAUSE, END
-		PAUSE, // -> LEVEL
-		END
-	};
-	STATE state;
-	ALLEGRO_EVENT event;
-	ALLEGRO_BITMAP *game_icon;
-	ALLEGRO_BITMAP *background;
+    /**
+     * @brief States of the game process in game_update.
+     * @see Game::game_update()
+     */
+    enum class STATE {
+        START, // -> LEVEL
+        LEVEL, // -> PAUSE, END
+        PAUSE, // -> LEVEL
+        END
+    };
+
+    STATE state;
+    ALLEGRO_EVENT event;
+    ALLEGRO_BITMAP *game_icon;
+    ALLEGRO_BITMAP *background;
+
 private:
-	ALLEGRO_DISPLAY *display;
-	ALLEGRO_TIMER *timer;
-	ALLEGRO_EVENT_QUEUE *event_queue;
-	UI *ui;
+    ALLEGRO_DISPLAY *display;
+    ALLEGRO_TIMER *timer;
+    ALLEGRO_EVENT_QUEUE *event_queue;
+    UI *ui;
 };
 
 #endif
