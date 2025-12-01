@@ -44,11 +44,15 @@ public:
     ~Scene();
 
     void Init();
+    void Update();
+    void Draw();
     void Destroy();
     ElementVec GetLabelElements(int label);
     ElementVec GetAllElements();
     void RegisterElement(Elements *ele);
     std::vector<Elements *> &Objects();
+
+    bool scene_end;
 
 private:
     ElementVec BuildElementVec(std::vector<Elements *> &source);
