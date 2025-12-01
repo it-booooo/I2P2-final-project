@@ -73,13 +73,13 @@ void Ball_interact(Elements *self)
     Ball &Obj = *static_cast<Ball *>(wrapper.entity);
     for (int j = 0; j < wrapper.inter_len; j++)
     {
-        ElementVec labelEle = _Get_label_elements(scene, Character_L);
+        ElementVec labelEle = sceneManager.GetLabelElements(Character_L);
         Character *Obj1 = NULL;
         if (labelEle.len > 0 && labelEle.arr[0]) {
             Elements &chara_wrapper = *labelEle.arr[0];
             Obj1 = static_cast<Character *>(chara_wrapper.entity);
         }
-        labelEle = _Get_label_elements(scene, Tree_L);
+        labelEle = sceneManager.GetLabelElements(Tree_L);
         Tree *Obj2 = NULL;
         if (labelEle.len > 0 && labelEle.arr[0]) {
             Elements &tree_wrapper = *labelEle.arr[0];

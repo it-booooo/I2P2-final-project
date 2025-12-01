@@ -75,7 +75,7 @@ void Combat_interact(Elements *self)
     for (int j = 0; j < wrapper.inter_len; j++)   //依序處理每種Label
     {
         int inter_label = wrapper.inter_obj[j];
-        ElementVec labelEle = _Get_label_elements(scene, inter_label);
+        ElementVec labelEle = sceneManager.GetLabelElements(inter_label);
         for (int i = 0; i < labelEle.len; i++)  //依序處理同Label中的每個hitbox
         {
             Elements *tar = labelEle.arr[i];

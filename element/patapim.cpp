@@ -124,7 +124,7 @@ void patapim_update(Elements *self) {
         }
 
         Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2, patapim_ATTACK_DAMAGE, chara.base.side);
-        if (atk) _Register_elements(scene, atk);
+        if (atk) sceneManager.RegisterElement(atk);
 
         chara.state        = ATK;
         chara.attack_timer = ATTACK_COOLDOWN_FRAMES;
@@ -147,7 +147,7 @@ void patapim_update(Elements *self) {
             /* 換貼圖 */
             al_destroy_bitmap(eq.img);
             eq.img = al_load_bitmap("assets/image/boom.png");
-            _Register_elements(scene, quake);
+            sceneManager.RegisterElement(quake);
         }
         chara.quake_timer = EARTHQUAKE_COOLDOWN;
     }

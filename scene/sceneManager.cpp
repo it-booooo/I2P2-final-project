@@ -1,53 +1,66 @@
 #include "sceneManager.h"
-#include <algorithm>
 
-Scene *scene = nullptr;
+SceneManager sceneManager;
 
-void _Scene_init(Scene *target)
+SceneManager::SceneManager()
 {
-    if (!target) return;
-    target->objects.clear();
-    scene = target;
+    currentScene = nullptr;
 }
 
-void _Scene_destroy(Scene *target)
+SceneManager::SceneManager(Scene *current)
 {
-    if (!target) return;
-    target->objects.clear();
-    if (scene == target) scene = nullptr;
+    currentScene = current;
 }
 
-static ElementVec build_vec(std::vector<Elements *> &source)
+void SceneManager::SetScene(Scene *target)
 {
-    return ElementVec{source.data(), static_cast<int>(source.size())};
+    currentScene = target;
 }
 
-ElementVec _Get_label_elements(Scene *target, int label)
+Scene *SceneManager::GetScene() const
 {
-    static std::vector<Elements *> buffer;
-    buffer.clear();
-    if (target) {
-        for (Elements *ele : target->objects) {
-            if (ele && !ele->dele && ele->label == label) buffer.push_back(ele);
-        }
+    return currentScene;
+}
+
+void SceneManager::InitializeScene()
+{
+    if (currentScene)
+    {
+        currentScene->Init();
     }
-    return build_vec(buffer);
 }
 
-ElementVec _Get_all_elements(Scene *target)
+void SceneManager::DestroyScene()
 {
-    static std::vector<Elements *> buffer;
-    buffer.clear();
-    if (target) {
-        for (Elements *ele : target->objects) {
-            if (ele && !ele->dele) buffer.push_back(ele);
-        }
+    if (currentScene)
+    {
+        currentScene->Destroy();
+        currentScene = nullptr;
     }
-    return build_vec(buffer);
 }
 
-void _Register_elements(Scene *target, Elements *ele)
+ElementVec SceneManager::GetLabelElements(int label)
 {
-    if (!target || !ele) return;
-    target->objects.push_back(ele);
+    if (currentScene)
+    {
+        return currentScene->GetLabelElements(label);
+    }
+    return ElementVec(nullptr, 0);
+}
+
+ElementVec SceneManager::GetAllElements()
+{
+    if (currentScene)
+    {
+        return currentScene->GetAllElements();
+    }
+    return ElementVec(nullptr, 0);
+}
+
+void SceneManager::RegisterElement(Elements *ele)
+{
+    if (currentScene)
+    {
+        currentScene->RegisterElement(ele);
+    }
 }

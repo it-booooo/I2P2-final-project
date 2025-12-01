@@ -120,7 +120,7 @@ void crocodilo_update(Elements *self)
                                  BULLET_DAMAGE, 1);
         if (proj) {
             Atk_set_image(proj, "assets/image/bullet.png");
-            _Register_elements(scene, proj);
+            sceneManager.RegisterElement(proj);
 
             /* 關鍵：登記追蹤行為，換 Update 指標 */
             _register_homing_bullet(proj);

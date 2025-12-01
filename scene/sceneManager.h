@@ -3,12 +3,24 @@
 
 #include "scene.h"
 
-extern Scene *scene;
+class SceneManager
+{
+public:
+    SceneManager();
+    explicit SceneManager(Scene *current);
 
-void _Scene_init(Scene *target);
-void _Scene_destroy(Scene *target);
-ElementVec _Get_label_elements(Scene *target, int label);
-ElementVec _Get_all_elements(Scene *target);
-void _Register_elements(Scene *target, Elements *ele);
+    void SetScene(Scene *target);
+    Scene *GetScene() const;
+    void InitializeScene();
+    void DestroyScene();
+    ElementVec GetLabelElements(int label);
+    ElementVec GetAllElements();
+    void RegisterElement(Elements *ele);
+
+private:
+    Scene *currentScene;
+};
+
+extern SceneManager sceneManager;
 
 #endif /* SCENEMANAGER_H */

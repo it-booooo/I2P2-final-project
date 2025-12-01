@@ -4,7 +4,7 @@
 #include "susu.h"              /* 提供 get_susu() 介面 */
 #include "combat.h"            /* 近戰攻擊矩形 */
 #include "../scene/sceneManager.h"
-#include "../scene/gamescene.h" /* _Register_elements & Combat_L */
+#include "../scene/gamescene.h" /* sceneManager.RegisterElement & Combat_L */
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
 #include <cmath>
@@ -159,7 +159,7 @@ void tungtungtung_update(Elements *self)
 
         /* 產生攻擊元素 */
                 Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2, TUNG_ATTACK_DAMAGE, chara->base.side);
-        if (atk) _Register_elements(scene, atk);
+        if (atk) sceneManager.RegisterElement(atk);
 
         chara->state        = ATK;
         chara->attack_timer = ATTACK_COOLDOWN_FRAMES;

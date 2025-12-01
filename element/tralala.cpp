@@ -123,7 +123,7 @@ void tralala_update(Elements *self)
         }
         Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2,
                                    TRALALA_ATTACK_DAMAGE, chara->base.side);
-        if (atk) _Register_elements(scene, atk);
+        if (atk) sceneManager.RegisterElement(atk);
         chara->state = ATK;
         chara->attack_timer = ATTACK_COOLDOWN_FRAMES;
     }
@@ -157,7 +157,7 @@ void tralala_update(Elements *self)
             eq->hitbox = New_Circle(centerX,
                                     centerY,
                                     fminf(eq->width,eq->height) / 2);
-            _Register_elements(scene, quake);
+            sceneManager.RegisterElement(quake);
         }
         chara->quake_timer = EARTHQUAKE_COOLDOWN;
     }

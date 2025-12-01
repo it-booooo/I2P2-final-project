@@ -56,7 +56,7 @@ void Projectile_interact(Elements *self)
     for (int j = 0; j < self->inter_len; j++)
     {
         int inter_label = self->inter_obj[j];
-        ElementVec labelEle = _Get_label_elements(scene, inter_label);
+        ElementVec labelEle = sceneManager.GetLabelElements(inter_label);
         for (int i = 0; i < labelEle.len; i++)
         {
             if (inter_label == Floor_L)

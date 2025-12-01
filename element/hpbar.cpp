@@ -57,9 +57,9 @@ void Hpbar_interact(Elements *self)
     /*for (int j = 0; j < self->inter_len; j++)
     {
         Hpbar *Obj =((Hpbar *)(self->entity));
-        ElementVec labelEle = _Get_label_elements(scene, Character_L);
+        ElementVec labelEle = sceneManager.GetLabelElements(Character_L);
         Character *Obj1 = (Character *)(labelEle.arr[0]->entity);
-        labelEle = _Get_label_elements(scene, Tree_L);
+        labelEle = sceneManager.GetLabelElements(Tree_L);
         Tree *Obj2 =(Tree *)(labelEle.arr[0]->entity);
 
 

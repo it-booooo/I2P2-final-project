@@ -145,7 +145,7 @@ void capuccino_update(Elements *self)
         }
         Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2,
                                     CAPUCCINO_ATTACK_DAMAGE, c->base.side);
-        if (atk) _Register_elements(scene, atk);
+        if (atk) sceneManager.RegisterElement(atk);
 
         c->state        = ATK;
         c->attack_timer = ATTACK_COOLDOWN_FRAMES;
