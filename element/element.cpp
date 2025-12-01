@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 
+DataCenter *DC = DataCenter::get_instance();
+
 Elements::Elements(int label_value)
 {
     label = label_value;

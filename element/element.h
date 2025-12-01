@@ -16,7 +16,7 @@ typedef void (*fptrEleUpdate)(Elements *);
 typedef void (*fptrEleInteract)(Elements *);
 typedef void (*fptrEleDestroy)(Elements *);
 
-DataCenter *DC=DataCenter::get_instance();
+extern DataCenter *DC;
 
 class Elements
 {
