@@ -7,10 +7,10 @@
 #include "../scene/gamescene.h" /* _Register_elements & Combat_L */
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+
 
 /* --------------------------------------------------
    追蹤／攻擊參數

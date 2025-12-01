@@ -2,7 +2,7 @@
 #include "charater.h"
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
-#include <stdio.h>
+#include <cstdio>
 /*
    [floor function]
 */

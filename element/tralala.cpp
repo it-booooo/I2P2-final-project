@@ -10,9 +10,8 @@
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
 #include "../shapes/Circle.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <cmath>
+#include <cstdlib>
 #include <cstdio>
 
 /* ---------------- 參數 ---------------- */

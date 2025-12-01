@@ -7,9 +7,9 @@
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
 #include "../scene/gamescene.h"
 
 /* 參數同上 */

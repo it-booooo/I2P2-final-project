@@ -7,9 +7,9 @@
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
 
 /* ---------- 參數 ---------- */
 #define CHASE_SPEED             5.0f

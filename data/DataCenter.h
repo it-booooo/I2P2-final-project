@@ -29,8 +29,8 @@ public:
 	~DataCenter();
 public:
 	static constexpr double FPS = 60.0;
-    static constexpr int    WIDTH  = 800;
-    static constexpr int    HEIGHT = 600;
+    static constexpr int    WIDTH  = 1800;
+    static constexpr int    HEIGHT = 1400;
     static constexpr int    GAME_FIELD = 600;
     static constexpr int    MAX_ELEMENT = 64;
 	double FPS;

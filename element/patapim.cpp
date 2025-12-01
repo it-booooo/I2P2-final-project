@@ -8,10 +8,10 @@
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+
 
 #define CHASE_SPEED            3.0f
 #define ARRIVE_EPSILON         60.0f

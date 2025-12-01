@@ -14,8 +14,8 @@
 #include "../scene/gamescene.h"
 #include "../data/DataCenter.h"
 #include <allegro5/allegro_native_dialog.h>
-#include <stdio.h>
-#include <stdbool.h>
+#include <cstdio>
+
 #define M_PI 3.14159265358979323846
 /*
    [susu function]

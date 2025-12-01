@@ -7,9 +7,9 @@
 #include "../scene/sceneManager.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 /* -------- 陣營常數（僅 0 / 1，避免誤傳） -------- */
 #define SIDE_PLAYER 0

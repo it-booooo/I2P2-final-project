@@ -9,7 +9,7 @@
 #include "../shapes/ShapeFactory.h"
 #include "../algif5/algif.h"
 #include "../scene/gamescene.h"
-#include <stdio.h>
+#include <cstdio>
 /*
    [Character function]
 */
