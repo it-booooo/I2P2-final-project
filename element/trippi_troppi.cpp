@@ -94,7 +94,7 @@ void trippi_troppi_update(Elements *self)
                                  BULLET_DAMAGE, 1);
         if(proj){
             Atk_set_image(proj,"assets/image/ball.png");
-            _Register_elements(scene,proj);
+            sceneManager.RegisterElement(proj);
         }
         ch->cooldown=COOLDOWN_FRAMES;
     }

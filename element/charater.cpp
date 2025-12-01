@@ -145,7 +145,7 @@ void Character_update(Elements *self)
                                      chara->y + 10,
                                      -5);
             }
-            _Register_elements(scene, pro);
+            sceneManager.RegisterElement(pro);
             chara->new_proj = true;
         }
     }*/

@@ -241,7 +241,7 @@ void susu_update(Elements *self)
             pro = New_Atk(Atk_L,chara->x + chara->width*0.5 - 20.0, chara->y + chara->height*0.5 - 70.0,vx,vy,chara->damage*2,0);                                      
             if(pro)
             {
-                _Register_elements(scene, pro);
+                sceneManager.RegisterElement(pro);
             }
 
 
@@ -307,7 +307,7 @@ void susu_update(Elements *self)
             pro = New_Combat(Combat_L, x1, y1, x2, y2, chara->damage, 0);                                      
             if(pro)
             {
-                _Register_elements(scene, pro);
+                sceneManager.RegisterElement(pro);
             }
             chara->new_proj = true;
         }
@@ -324,7 +324,7 @@ void susu_update(Elements *self)
             chara->e_timer =60;
             Elements *pro;
             pro = New_Earthquake(Earthquake_L,chara->x + chara->width*0.5-192.0, chara->y + chara->height*0.5-100.0, chara->damage, 0);                                      
-            if(pro)_Register_elements(scene, pro);
+            if(pro)sceneManager.RegisterElement(pro);
             chara->new_proj = true;
         }
     }
@@ -347,7 +347,7 @@ void susu_draw(Elements *self)
     }
     /*Elements *hpbar;
     hpbar = New_Hpbar(Hpbar_L,chara->base.full_hp,chara->base.hp);
-    _Register_elements(scene,hpbar);*/
+    sceneManager.RegisterElement(hpbar);*/
 }
 void susu_destroy(Elements *self)
 {

@@ -45,7 +45,7 @@ void Teleport_update(Elements *self)
 }
 void Teleport_interact(Elements *self)
 {
-    ElementVec labelEle = _Get_label_elements(scene, Character_L);
+    ElementVec labelEle = sceneManager.GetLabelElements(Character_L);
     for (int i = 0; i < labelEle.len; i++)
     {
         _Teleport_interact_Character(self, labelEle.arr[i]);

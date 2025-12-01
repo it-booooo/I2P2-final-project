@@ -133,7 +133,7 @@ void Atk_interact(Elements *self)
     }
 
     for (int j = 0; j < wrapper.inter_len; ++j) {
-        ElementVec vec = _Get_label_elements(scene, wrapper.inter_obj[j]);
+        ElementVec vec = sceneManager.GetLabelElements(wrapper.inter_obj[j]);
 
         for (int i = 0; i < vec.len; ++i) {
             Elements *tar_ptr = vec.arr[i];

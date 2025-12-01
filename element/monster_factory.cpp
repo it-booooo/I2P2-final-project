@@ -179,7 +179,7 @@ static Elements *create_monster(MonsterType type, float x, float y)
 static int count_alive_monsters(Scene *scene)
 {
     int cnt = 0;
-    ElementVec all = _Get_all_elements(scene);
+    ElementVec all = scene->GetAllElements();
     for (int i = 0; i < all.len; ++i) {
         switch (all.arr[i]->label) {
             case tungtungtung_L:
@@ -205,7 +205,9 @@ static int count_alive_monsters(Scene *scene)
 void MF_Spawn(Scene *scene, MonsterType type, float x, float y)
 {
     Elements *m = create_monster(type, x, y);
-    if (m) _Register_elements(scene, m);
+    if (scene && m) {
+        scene->RegisterElement(m);
+    }
 }
 
 void MF_Update(Scene *scene, double dt)

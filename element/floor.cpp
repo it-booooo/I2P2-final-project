@@ -43,7 +43,7 @@ void _Floor_load_map(Floor *floor)
 void Floor_update(Elements *ele) {}
 void Floor_interact(Elements *self)
 {
-    ElementVec labelEle = _Get_label_elements(scene, Character_L);
+    ElementVec labelEle = sceneManager.GetLabelElements(Character_L);
     for (int i = 0; i < labelEle.len; i++)
     {
         _Floor_interact_Character(self, labelEle.arr[i]);

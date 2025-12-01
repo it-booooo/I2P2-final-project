@@ -29,13 +29,35 @@ enum ElementLabel {
     Teleport_L
 };
 
-struct ElementVec {
+class ElementVec {
+public:
+    ElementVec(Elements **elements, int length);
+
+public:
     Elements **arr;
     int len;
 };
 
-struct Scene {
+class Scene {
+public:
+    Scene();
+    ~Scene();
+
+    void Init();
+    void Destroy();
+    ElementVec GetLabelElements(int label);
+    ElementVec GetAllElements();
+    void RegisterElement(Elements *ele);
+    std::vector<Elements *> &Objects();
+
+private:
+    ElementVec BuildElementVec(std::vector<Elements *> &source);
+    void FilterElementsByLabel(int label, std::vector<Elements *> &collector);
+    void CollectAllActive(std::vector<Elements *> &collector);
+
+private:
     std::vector<Elements *> objects;
+    std::vector<Elements *> buffer;
 };
 
 #endif /* SCENE_H */
