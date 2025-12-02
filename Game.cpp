@@ -204,27 +204,25 @@ bool Game::game_update()
     }
 
     scene->Update();
-    if (!scene->scene_end)
+    if (scene->scene_end)
     {
-        return true;
+        scene->Destroy();
+        switch (window)
+        {
+        case Menu_L:
+            create_scene(Menu_L);
+            break;
+        case GameScene_L:
+            create_scene(GameScene_L);
+            break;
+        case -1:
+            return false;
+        default:
+            break;
+        }        
     }
-
-    scene->Destroy();
-    switch (window)
-    {
-    case Menu_L:
-        create_scene(Menu_L);
-        break;
-    case GameScene_L:
-        create_scene(GameScene_L);
-        break;
-    case -1:
-        return false;
-    default:
-        break;
-    }
-
-    return scene != nullptr;
+    return true;
+    //return scene != nullptr;
 }
 
 /**
@@ -237,6 +235,10 @@ void Game::game_draw()
     if (scene)
     {
         scene->Draw();
+    }
+    else
+    {
+        std::printf("No scene to draw!\n");
     }
     al_flip_display();
 }

@@ -5,7 +5,8 @@
 
 
 
-typedef enum { LVL_RUNNING, LVL_TRANSITION, LVL_FINISHED } LevelState;int level_no; 
+typedef enum { LVL_RUNNING, LVL_TRANSITION, LVL_FINISHED } LevelState;
+extern int level_no; 
 bool is_over();
 void Level_switch_Init(void);
 void Level_switch_Update(Scene *scene, double dt);

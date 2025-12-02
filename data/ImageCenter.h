@@ -30,4 +30,17 @@ private:
 	std::map<std::string, ALLEGRO_BITMAP*> bitmaps;
 };
 
+namespace ImagePath {
+    // GameScene 用到的背景
+    inline const char STAGE_BG[]   = "./assets/image/stage.jpg";
+    inline const char LEVEL0_BG[]  = "./assets/image/level0.png";
+    inline const char LEVEL1_BG[]  = "./assets/image/level1.png";
+    inline const char LEVEL2_BG[]  = "./assets/image/level2.png";
+    inline const char LEVEL3_BG[]  = "./assets/image/level3.png";
+
+    // Tile
+    inline const char FLOOR_TILE[] = "./assets/image/floor_tile.png";
+    inline const char WALL_TILE[]  = "./assets/image/wall_tile.png";
+}
+
 #endif

@@ -7,6 +7,7 @@
 #include "susu.h"
 #include <cstdio>
 
+int level_no;
 static LevelState state = LVL_RUNNING;
 static double     trans_timer = 0.0;             
 static ALLEGRO_FONT *level_font = NULL;

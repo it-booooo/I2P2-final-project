@@ -41,12 +41,12 @@ public:
 class Scene {
 public:
     Scene();
-    ~Scene();
+    virtual ~Scene();
 
-    void Init();
-    void Update();
-    void Draw();
-    void Destroy();
+    virtual void Init();
+    virtual void Update();
+    virtual void Draw();
+    virtual void Destroy();
     ElementVec GetLabelElements(int label);
     ElementVec GetAllElements();
     void RegisterElement(Elements *ele);
