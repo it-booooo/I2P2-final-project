@@ -306,6 +306,7 @@ void GameScene::UpdateLevelState()
 
         is_dead  = false;
         is_win   = false;
+        SetNextSceneLabel(Menu_L);
         scene_end = true;   // 不再設定 window，全交給 Game / SceneManager 處理
     }
 }
@@ -358,6 +359,7 @@ void GameScene::HandlePauseMenu()
             switch_level[i] = 0;
 
         is_paused = false;
+        SetNextSceneLabel(GameScene_L);
         scene_end = true;   // 外面的 Game / SceneManager 收到後重新 new GameScene
     }
     else if (pause_option == 2)
@@ -367,6 +369,7 @@ void GameScene::HandlePauseMenu()
             switch_level[i] = 0;
 
         is_paused = false;
+        SetNextSceneLabel(Menu_L);
         scene_end = true;   // 外面決定切到主選單 scene
     }
 }

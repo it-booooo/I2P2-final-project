@@ -29,6 +29,11 @@ enum ElementLabel {
     Teleport_L
 };
 
+enum SceneLabel {
+    Menu_L = 0,
+    GameScene_L = 1
+};
+
 class ElementVec {
 public:
     ElementVec(Elements **elements, int length);
@@ -47,6 +52,8 @@ public:
     virtual void Update();
     virtual void Draw();
     virtual void Destroy();
+    void SetNextSceneLabel(int label);
+    int NextSceneLabel() const;
     ElementVec GetLabelElements(int label);
     ElementVec GetAllElements();
     void RegisterElement(Elements *ele);
@@ -60,6 +67,7 @@ private:
     void CollectAllActive(std::vector<Elements *> &collector);
 
 private:
+    int next_scene_label;
     std::vector<Elements *> objects;
     std::vector<Elements *> buffer;
 };

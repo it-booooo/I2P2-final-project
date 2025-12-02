@@ -6,7 +6,10 @@ ElementVec::ElementVec(Elements **elements, int length)
     len = length;
 }
 
-Scene::Scene() : scene_end(false) {}
+Scene::Scene() : scene_end(false)
+{
+    next_scene_label = 0;
+}
 
 Scene::~Scene()
 {
@@ -17,6 +20,16 @@ void Scene::Init()
 {
     objects.clear();
     buffer.clear();
+}
+
+void Scene::SetNextSceneLabel(int label)
+{
+    next_scene_label = label;
+}
+
+int Scene::NextSceneLabel() const
+{
+    return next_scene_label;
 }
 
 void Scene::Update()
