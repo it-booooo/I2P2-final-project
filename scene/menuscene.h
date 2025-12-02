@@ -4,7 +4,6 @@
 #include "scene.h"
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_audio.h>
-#include <allegro5/allegro_bitmap.h>
 
 class MenuScene : public Scene {
 public:

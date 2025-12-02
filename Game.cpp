@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Utils.h"
 #include "data/DataCenter.h"
+#include "data/SoundCenter.h"
 #include "shapes/Shape.h"
 
 // include allegro
@@ -143,6 +144,10 @@ void Game::game_init()
     addon_init &= al_install_mouse();     // install mouse event
     addon_init &= al_install_audio();     // install audio event
     GAME_ASSERT(addon_init, "failed to initialize allegro addons.");
+
+    SoundCenter *sound_center = SoundCenter::get_instance();
+    bool sound_init = sound_center->init();
+    GAME_ASSERT(sound_init, "failed to initialize audio mixer.");
 
     // Create display
     // 原本: al_create_display(WIDTH, HEIGHT);
