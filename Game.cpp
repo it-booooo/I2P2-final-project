@@ -15,6 +15,7 @@
 // include scene and following component
 #include "scene/sceneManager.h"
 #include "scene/gamescene.h"
+#include "scene/menuscene.h"
 
 #include <cstdio>
 
@@ -22,15 +23,6 @@
  * @brief 建構子：設定標題、成員初始值，並呼叫 game_init()
  * 對應原本 New_Game() + game_init(Game *self)
  */
-namespace
-{
-    enum SceneLabel
-    {
-        Menu_L = 0,
-        GameScene_L = 1
-    };
-}
-
 Game::Game(bool isTestMode)
     : title("Into the Loop: Monsters of NTHU"),
       display(nullptr),
@@ -158,7 +150,6 @@ void Game::game_init()
     display = al_create_display(DC->window_width, DC->window_height);
     GAME_ASSERT(display, "failed to create display.");
 
-    // Create first scene（邏輯保持一樣）
     create_scene(Menu_L);
 
     // create event queue（原本是 global event_queue，現在變成成員）
@@ -206,8 +197,8 @@ bool Game::game_update()
     scene->Update();
     if (scene->scene_end)
     {
-        scene->Destroy();
-        switch (window)
+        int target = scene->NextSceneLabel();
+        switch (target)
         {
         case Menu_L:
             create_scene(Menu_L);
@@ -218,8 +209,8 @@ bool Game::game_update()
         case -1:
             return false;
         default:
-            break;
-        }        
+            return false;
+        }
     }
     return true;
     //return scene != nullptr;
@@ -293,7 +284,7 @@ void Game::create_scene(int label)
     switch (label)
     {
     case Menu_L:
-        scene = new Scene();
+        scene = new MenuScene();
         break;
     case GameScene_L:
         scene = new GameScene();
@@ -304,6 +295,7 @@ void Game::create_scene(int label)
     }
 
     sceneManager.SetScene(scene);
+    scene->SetNextSceneLabel(label);
     sceneManager.InitializeScene();
     window = label;
 }
