@@ -14,6 +14,7 @@
 
 // include scene and following component
 #include "scene/sceneManager.h"
+#include "scene/gamescene.h"
 
 #include <cstdio>
 
@@ -274,6 +275,7 @@ void Game::game_destroy()
         scene->Destroy();
         delete scene;
         scene = nullptr;
+        sceneManager.SetScene(nullptr);
     }
 }
 
@@ -286,7 +288,20 @@ void Game::create_scene(int label)
         scene = nullptr;
     }
 
-    scene = new Scene();
-    scene->Init();
+    switch (label)
+    {
+    case Menu_L:
+        scene = new Scene();
+        break;
+    case GameScene_L:
+        scene = new GameScene();
+        break;
+    default:
+        scene = new Scene();
+        break;
+    }
+
+    sceneManager.SetScene(scene);
+    sceneManager.InitializeScene();
     window = label;
 }
