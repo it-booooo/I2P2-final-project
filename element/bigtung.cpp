@@ -25,17 +25,20 @@
    --------------------------------------------------*/
 Elements *New_bigtung(int label)
 {
-    bigtung *entity = static_cast<bigtung *>(malloc(sizeof(bigtung)));
+    //  1. 不再用 malloc，改用 new，往 C++/OOP 靠
+    auto *entity = new bigtung{};      // 給所有成員預設成 0 / nullptr
     Elements *pObj = New_Elements(label);
     Elements &wrapper = *pObj;
     bigtung &obj = *entity;
 
-    /* 載入靜態貼圖 */
+    /* 載入靜態貼圖：改用 ImageCenter 管理 */
     const char *state_string[3] = {"stop", "move", "atk"};
     for (int i = 0; i < 3; ++i) {
         char buffer[64];
-        sprintf(buffer, "assets/image/bigtung_%s.png", state_string[i]);
-        obj.img[i] = al_load_bitmap(buffer);
+        std::snprintf(buffer, sizeof(buffer),
+                      "./assets/image/bigtung_%s.png", state_string[i]);
+        //  2. 改成由 ImageCenter 載圖
+        obj.img[i] = ImageCenter::get_instance()->get(buffer);
     }
 
     /* 幾何資料 */
@@ -45,14 +48,13 @@ Elements *New_bigtung(int label)
     obj.y = DataCenter::HEIGHT - obj.height - 60;
     obj.base.hp   = 1000;
     obj.base.side = 1;          /* 敵方陣營 */
-    
 
     /* 個別冷卻計時器初始化 */
     obj.attack_timer = 0;
 
     /* 避開出生點太靠近玩家 */
     Elements *susu_elem = get_susu();
-    susu *player_ptr = NULL;
+    susu *player_ptr = nullptr;
     bool need_retry = false;
     if (susu_elem) {
         Elements &susu_wrapper = *susu_elem;
@@ -73,20 +75,22 @@ Elements *New_bigtung(int label)
     } while (need_retry);
 
     /* 依最終座標建立 hitbox */
-    obj.base.hitbox = New_Rectangle(obj.x,
-                                 obj.y,
-                                 obj.x + obj.width,
-                                 obj.y + obj.height);
+    obj.base.hitbox = New_Rectangle(
+        obj.x,
+        obj.y,
+        obj.x + obj.width,
+        obj.y + obj.height
+    );
 
     obj.dir   = false;  /* 預設面向左 */
     obj.state = STOP;
 
-    /* 綁定多型函式 */
-    wrapper.entity = entity;
-    wrapper.Draw        = bigtung_draw;
-    wrapper.Update      = bigtung_update;
-    wrapper.Interact    = bigtung_interact;
-    wrapper.Destroy     = bigtung_destory;
+    /* 綁定函式 */
+    wrapper.entity   = entity;
+    wrapper.Draw     = bigtung_draw;
+    wrapper.Update   = bigtung_update;
+    wrapper.Interact = bigtung_interact;
+    wrapper.Destroy  = bigtung_destory;
 
     return pObj;
 }
@@ -117,7 +121,7 @@ void bigtung_update(Elements *self)
 
     float dx = tx - cx;
     float dy = ty - cy;
-    float dist = sqrtf(dx * dx + dy * dy);
+    float dist = std::sqrt(dx * dx + dy * dy);
 
     /* 2) 追蹤移動或停止 */
     if (dist > ARRIVE_EPSILON) {
@@ -132,13 +136,11 @@ void bigtung_update(Elements *self)
 
     /* 3) 自動攻擊判定 */
     if (dist <= ATTACK_DISTANCE && chara.attack_timer == 0) {
-        /* 近戰矩形寬 / 長 */
         const int reach = 120;  /* 延伸距離 */
         const int thick = 200;  /* 攻擊寬度 */
 
-        /* 決定攻擊方向 */
         int dir;
-        if (fabsf(dx) > fabsf(dy)) {
+        if (std::fabs(dx) > std::fabs(dy)) {
             dir = (dx >= 0) ? 0 : 3; /* 0:右, 3:左 */
         } else {
             dir = (dy >= 0) ? 1 : 2; /* 1:下, 2:上 */
@@ -147,33 +149,37 @@ void bigtung_update(Elements *self)
         int x1, y1, x2, y2;
         switch (dir) {
             case 0: /* → 右 */
-                x1 = cx;
-                y1 = cy - thick / 2;
-                x2 = cx + reach;
-                y2 = cy + thick / 2;
+                x1 = (int)cx;
+                y1 = (int)(cy - thick / 2);
+                x2 = (int)(cx + reach);
+                y2 = (int)(cy + thick / 2);
                 break;
             case 1: /* ↓ 下 */
-                x1 = cx - thick / 2;
-                y1 = cy;
-                x2 = cx + thick / 2;
-                y2 = cy + reach;
+                x1 = (int)(cx - thick / 2);
+                y1 = (int)cy;
+                x2 = (int)(cx + thick / 2);
+                y2 = (int)(cy + reach);
                 break;
             case 2: /* ↑ 上 */
-                x1 = cx - thick / 2;
-                y1 = cy - reach;
-                x2 = cx + thick / 2;
-                y2 = cy;
+                x1 = (int)(cx - thick / 2);
+                y1 = (int)(cy - reach);
+                x2 = (int)(cx + thick / 2);
+                y2 = (int)cy;
                 break;
             default: /* ← 左 */
-                x1 = cx - reach;
-                y1 = cy - thick / 2;
-                x2 = cx;
-                y2 = cy + thick / 2;
+                x1 = (int)(cx - reach);
+                y1 = (int)(cy - thick / 2);
+                x2 = (int)cx;
+                y2 = (int)(cy + thick / 2);
                 break;
         }
 
-        /* 產生攻擊元素 */
-        Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2, TUNG_ATTACK_DAMAGE, chara.base.side);
+        Elements *atk = New_Combat(
+            Combat_L,
+            x1, y1, x2, y2,
+            TUNG_ATTACK_DAMAGE,
+            chara.base.side
+        );
         if (atk) sceneManager.RegisterElement(atk);
 
         chara.state        = ATK;
@@ -181,7 +187,8 @@ void bigtung_update(Elements *self)
     }
 
     /* 4) 攻擊貼圖顯示約 10 幀後恢復 */
-    if (chara.attack_timer <= ATTACK_COOLDOWN_FRAMES - 10 && chara.state == ATK) {
+    if (chara.attack_timer <= ATTACK_COOLDOWN_FRAMES - 10 &&
+        chara.state == ATK) {
         chara.state = STOP;
     }
 }
@@ -214,16 +221,23 @@ void bigtung_interact(Elements *self) {
    --------------------------------------------------*/
 void bigtung_destory(Elements *self)
 {
-    if (!self) return;
-    Elements &wrapper = *self;
-    bigtung &chara = *static_cast<bigtung *>(wrapper.entity);
-    for (int i = 0; i < 3; ++i) {
-        if (chara.img[i]) al_destroy_bitmap(chara.img[i]);
-    }
+    if (!self || !self->entity) return;
+
+    auto *chara = static_cast<bigtung *>(self->entity);
+
+    //  不要 destroy bitmap，因為改成 ImageCenter 管理
+    // for (int i = 0; i < 3; ++i) {
+    //     if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
+    // }
+
     /* 釋放 hitbox 與物件本身 */
-    delete chara.base.hitbox;
-    free(&chara);
-    free(self);
+    delete chara->base.hitbox;   // New_Rectangle 是用 new 出來的
+    chara->base.hitbox = nullptr;
+
+    delete chara;                //  因為上面用 new bigtung{}
+    self->entity = nullptr;
+
+    //  不要 free(self)，Elements* 由 Scene / SceneManager 負責
 }
 
 /* --------------------------------------------------
@@ -237,13 +251,13 @@ void _bigtung_update_position(Elements *self, int dx, int dy)
     chara.x += dx;
     chara.y += dy;
 
-    /* 邊界檢查 */
-    if (chara.x < 0)                       chara.x = 0;
-    if (chara.y < 0)                       chara.y = 0;
-    if (chara.x > DataCenter::WIDTH  - chara.width)   chara.x = DataCenter::WIDTH  - chara.width;
-    if (chara.y > DataCenter::HEIGHT - chara.height)  chara.y = DataCenter::HEIGHT - chara.height;
+    if (chara.x < 0)                            chara.x = 0;
+    if (chara.y < 0)                            chara.y = 0;
+    if (chara.x > DataCenter::WIDTH  - chara.width)
+        chara.x = DataCenter::WIDTH  - chara.width;
+    if (chara.y > DataCenter::HEIGHT - chara.height)
+        chara.y = DataCenter::HEIGHT - chara.height;
 
-    /* hitbox 同步 */
     Shape *hb = chara.base.hitbox;
     if (!hb) return;
 

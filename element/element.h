@@ -3,6 +3,10 @@
 
 #include <allegro5/allegro.h>
 #include "../data/DataCenter.h"
+#include "../data/FontCenter.h"
+#include "../data/GIFCenter.h"
+#include "../data/ImageCenter.h"
+#include "../data/SoundCenter.h"
 
 class Element
 {

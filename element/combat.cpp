@@ -4,31 +4,40 @@
 #include "tree.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../scene/gamescene.h" // for element label
-#include "../scene/sceneManager.h" // for scene variable
+#include "../scene/gamescene.h"
+#include "../scene/sceneManager.h"
+#include "../data/ImageCenter.h"
+
 /*
    [Combat function]
 */
-Elements *New_Combat(int label, int x1, int y1, int x2,int y2, int damage,int side)
+
+Elements *New_Combat(int label,
+                     int x1, int y1,
+                     int x2, int y2,
+                     int damage, int side)
 {
-    Combat *entity = static_cast<Combat *>(malloc(sizeof(Combat)));
+    Combat *entity = new Combat{};
     Elements *pObj = New_Elements(label);
     Elements &wrapper = *pObj;
-    Combat &obj = *entity;
+    Combat   &obj = *entity;
 
-    obj.img = al_load_bitmap("assets/image/projectile.png");
-    obj.width = al_get_bitmap_width(obj.img);
+    obj.img = ImageCenter::get_instance()->get("./assets/image/projectile.png");
+    obj.width  = al_get_bitmap_width (obj.img);
     obj.height = al_get_bitmap_height(obj.img);
     obj.x1 = x1;
     obj.y1 = y1;
     obj.x2 = x2;
     obj.y2 = y2;
     obj.damage = damage;
-    obj.side = side;
-    obj.hitbox = New_Rectangle(obj.x1,
-                               obj.y1,
-                               obj.x2,
-                               obj.y2);
+    obj.side   = side;
+
+    obj.hitbox = New_Rectangle(
+        obj.x1,
+        obj.y1,
+        obj.x2,
+        obj.y2
+    );
 
     wrapper.inter_obj[wrapper.inter_len++] = tungtungtung_L;
     wrapper.inter_obj[wrapper.inter_len++] = Susu_L;
@@ -40,26 +49,30 @@ Elements *New_Combat(int label, int x1, int y1, int x2,int y2, int damage,int si
     wrapper.inter_obj[wrapper.inter_len++] = crocodilo_L;
     wrapper.inter_obj[wrapper.inter_len++] = bigtung_L;
 
-    wrapper.entity = entity;
-    wrapper.Update = Combat_update;
+    wrapper.entity   = entity;
+    wrapper.Update   = Combat_update;
     wrapper.Interact = Combat_interact;
-    wrapper.Draw = Combat_draw;
-    wrapper.Destroy = Combat_destory;
+    wrapper.Draw     = Combat_draw;
+    wrapper.Destroy  = Combat_destory;
 
     return pObj;
 }
+
 void Combat_update(Elements *self)
 {
-    _Combat_update_position(self, 0, 0);
+    _Combat_update_position(self, 0.0f, 0.0f);
 }
+
 void _Combat_update_position(Elements *self, float dx, float dy)
 {
     Elements &wrapper = *self;
-    Combat &Obj = *static_cast<Combat *>(wrapper.entity);
+    Combat   &Obj = *static_cast<Combat *>(wrapper.entity);
+
     Obj.x1 += dx;
     Obj.x2 += dx;
     Obj.y1 += dy;
     Obj.y2 += dy;
+
     Shape *hitbox = Obj.hitbox;
     if (!hitbox) return;
 
@@ -68,48 +81,64 @@ void _Combat_update_position(Elements *self, float dx, float dy)
     hitbox->update_center_x(cx + dx);
     hitbox->update_center_y(cy + dy);
 }
+
 void Combat_interact(Elements *self)
 {
     Elements &wrapper = *self;
-    Combat &combat = *static_cast<Combat *>(wrapper.entity);
-    for (int j = 0; j < wrapper.inter_len; j++)   //依序處理每種Label
+    Combat   &combat  = *static_cast<Combat *>(wrapper.entity);
+
+    for (int j = 0; j < wrapper.inter_len; j++)
     {
         int inter_label = wrapper.inter_obj[j];
         ElementVec labelEle = sceneManager.GetLabelElements(inter_label);
-        for (int i = 0; i < labelEle.len; i++)  //依序處理同Label中的每個hitbox
+
+        for (int i = 0; i < labelEle.len; i++)
         {
             Elements *tar = labelEle.arr[i];
-            if (!tar) continue;
+            if (!tar || !tar->entity) continue;
 
-            Elements &target_wrapper = *tar;
-            if (!target_wrapper.entity) continue;
-
-            Damageable &target = *reinterpret_cast<Damageable *>(target_wrapper.entity);
+            Damageable &target =
+                *reinterpret_cast<Damageable *>(tar->entity);
             Shape *tar_hitbox = target.hitbox;
-            if (tar_hitbox && combat.hitbox) {
-                if (tar_hitbox->overlap(*combat.hitbox) && combat.side != target.side) {
-                    DealDamageIfPossible(tar, combat.damage);
-                }
+
+            if (!tar_hitbox || !combat.hitbox) continue;
+
+            if (tar_hitbox->overlap(*combat.hitbox) &&
+                combat.side != target.side)
+            {
+                DealDamageIfPossible(tar, combat.damage);
             }
         }
     }
     wrapper.dele = true;
 }
+
 void Combat_draw(Elements *self)
 {
     Elements &wrapper = *self;
-    Combat &Obj = *static_cast<Combat *>(wrapper.entity);
+    Combat   &Obj = *static_cast<Combat *>(wrapper.entity);
+    if (!Obj.img) return;
+
     if (Obj.x1 < Obj.x2)
         al_draw_bitmap(Obj.img, Obj.x1, Obj.y1, ALLEGRO_FLIP_HORIZONTAL);
     else
         al_draw_bitmap(Obj.img, Obj.x1, Obj.y1, 0);
 }
+
 void Combat_destory(Elements *self)
 {
-    Elements &wrapper = *self;
-    Combat &Obj = *static_cast<Combat *>(wrapper.entity);
-    al_destroy_bitmap(Obj.img);
-    delete Obj.hitbox;
-    free(&Obj);
-    free(self);
+    if (!self || !self->entity) return;
+
+    Combat *Obj = static_cast<Combat *>(self->entity);
+
+    // projectile.png 由 ImageCenter 管理，不可 al_destroy_bitmap
+    if (Obj->hitbox) {
+        delete Obj->hitbox;
+        Obj->hitbox = nullptr;
+    }
+
+    delete Obj;
+    self->entity = nullptr;
+
+    // 不要 delete/free self，交給 Scene / SceneManager 管
 }
