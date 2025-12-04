@@ -86,39 +86,78 @@ Elements *New_susu(int label)
 
 void susu_update(Elements *self)
 {
-    // use the idea of finite state machine to deal with different state
-    
     susu *chara = ((susu *)(self->entity));
-    if(chara->e_timer>0)chara->e_timer--;
-    if(chara->q_timer>0)chara->q_timer--;
+
+    //printf("state=%d  e_timer=%d  q_timer=%d\n", chara->state, chara->e_timer, chara->q_timer);
+
+    if(chara->e_timer>0) chara->e_timer--;
+    if(chara->q_timer>0) chara->q_timer--;
+
     int move_dis = 10;
-    static bool space=0;
+    static bool space = 0;
     int space_co = 15;
+
     ALLEGRO_MOUSE_STATE state;
     al_get_mouse_state(&state);
     DataCenter *DC = DataCenter::get_instance();
-    if (DC->key_state[ALLEGRO_KEY_SPACE]==0)
-    {
-        space=0;
+
+    if (DC->key_state[ALLEGRO_KEY_SPACE] == 0)
+        space = 0;
+
+    // ============================================================
+    // === FIX START ===
+    // 新增動畫計時系統（不依賴 GIF 的 done）
+    if (chara->anime_time > 0) {
+        chara->anime++;
+        if (chara->anime >= chara->anime_time) {
+            // 技能動畫播放一次結束
+            chara->state = STOP;
+            chara->anime = 0;
+            chara->anime_time = 0;
+            chara->new_proj = false;
+        }
     }
+    // === FIX END ===
+    // ============================================================
+
+
+    // ===================== STOP =====================
     if (chara->state == STOP)
     {
         if (state.buttons & 1)
         {
             chara->state = COMBAT;
+
+            // === FIX START ===
+            chara->anime = 0;
+            chara->anime_time = 20;  // COMBAT 播一次
+            chara->new_proj = false;
+            // === FIX END ===
         }
         else if (DC->key_state[ALLEGRO_KEY_Q])
         {
-            if(chara->q_timer <= 0)
+            if (chara->q_timer <= 0)
             {
                 chara->state = ATK;
+
+                // === FIX START ===
+                chara->anime = 0;
+                chara->anime_time = 30;  // ATK 播一次
+                chara->new_proj = false;
+                // === FIX END ===
             }
         }
         else if (DC->key_state[ALLEGRO_KEY_E])
         {
-            if(chara->e_timer <=0)
+            if (chara->e_timer <= 0)
             {
                 chara->state = EARTHQUAKE;
+
+                // === FIX START ===
+                chara->anime = 0;
+                chara->anime_time = 45;  // EARTHQUAKE 播一次
+                chara->new_proj = false;
+                // === FIX END ===
             }
         }
         else if (DC->key_state[ALLEGRO_KEY_SPACE] && space==0)
@@ -154,26 +193,45 @@ void susu_update(Elements *self)
         {
             chara->state = STOP;
         }
-        
     }
+
+    // ===================== MOVE =====================
     else if (chara->state == MOVE)
     {   
         if (state.buttons & 1)
         {
             chara->state = COMBAT;
+
+            // === FIX START ===
+            chara->anime = 0;
+            chara->anime_time = 20;
+            chara->new_proj = false;
+            // === FIX END ===
         }
         else if (DC->key_state[ALLEGRO_KEY_Q])
         {
-            if(chara->q_timer <= 0)
+            if (chara->q_timer <= 0)
             {
                 chara->state = ATK;
+
+                // === FIX START ===
+                chara->anime = 0;
+                chara->anime_time = 30;
+                chara->new_proj = false;
+                // === FIX END ===
             }
         }
         else if (DC->key_state[ALLEGRO_KEY_E])
         {
-            if(chara->e_timer <=0)
+            if (chara->e_timer <= 0)
             {
                 chara->state = EARTHQUAKE;
+
+                // === FIX START ===
+                chara->anime = 0;
+                chara->anime_time = 45;
+                chara->new_proj = false;
+                // === FIX END ===
             }
         }
         else if (DC->key_state[ALLEGRO_KEY_SPACE] && space==0)
@@ -182,153 +240,136 @@ void susu_update(Elements *self)
             else if(chara->dir==1) _susu_update_position(self, move_dis*space_co, 0);
             else if(chara->dir==2) _susu_update_position(self, 0, -1*move_dis*space_co);
             else if(chara->dir==3) _susu_update_position(self, 0, move_dis*space_co);
-            space =1;
-            chara->state = MOVE;
+            space = 1;
         }
         else if (DC->key_state[ALLEGRO_KEY_A])
         {
             chara->dir = 0;
             _susu_update_position(self, -1*move_dis, 0);
-            chara->state = MOVE;
         }
         else if (DC->key_state[ALLEGRO_KEY_D])
         {
             chara->dir = 1;
             _susu_update_position(self, move_dis, 0);
-            chara->state = MOVE;
         }
         else if (DC->key_state[ALLEGRO_KEY_W])
         {
             chara->dir = 2;
             _susu_update_position(self, 0, -1*move_dis);
-            chara->state = MOVE;
         }
         else if (DC->key_state[ALLEGRO_KEY_S])
         {
             chara->dir = 3;
             _susu_update_position(self, 0, move_dis);
-            chara->state = MOVE;
         }
-        if (chara->gif_status[chara->state]->done)
+        else
         {
             chara->state = STOP;
         }
-           
     }
+
+    // ===================== ATK =====================
     else if (chara->state == ATK)
     {
-        if (chara->gif_status[chara->state]->done)
+        // === FIX: 移除依賴 done（改由 anime_time 控制）
+        if (chara->gif_status[ATK]->display_index == 2 &&
+            chara->new_proj == false &&
+            chara->q_timer <= 0)
         {
-            chara->state = STOP;
-            chara->new_proj = false;
-        }
-        if (chara->gif_status[ATK]->display_index == 2 && chara->new_proj == false && chara->q_timer <= 0)
-        {
-            chara->q_timer=60;
-            Elements *pro;
+            chara->q_timer = 60;
+
             float dx = DC->mouse.x - (chara->x + chara->width*0.5);
             float dy = DC->mouse.y - (chara->y + chara->height*0.5);
             float len = sqrt(dx * dx + dy * dy);
-            /*const float base_speed   = 12.0;
-            const float extra = 0.1;
-
-            float speed = base_speed + extra * len;
-            if (speed > 40.0) speed = 40.0;*/
-
             float speed = 25.0;
             float vx = speed * dx / len;
             float vy = speed * dy / len;
-            pro = New_Atk(Atk_L,chara->x + chara->width*0.5 - 20.0, chara->y + chara->height*0.5 - 70.0,vx,vy,chara->damage*2,0);                                      
-            if(pro)
-            {
-                sceneManager.RegisterElement(pro);
-            }
 
+            Elements *pro = New_Atk(Atk_L,
+                                     chara->x + chara->width*0.5 - 20.0,
+                                     chara->y + chara->height*0.5 - 70.0,
+                                     vx, vy,
+                                     chara->damage*2,
+                                     0);
+            if(pro) sceneManager.RegisterElement(pro);
 
             chara->new_proj = true;
         }
     }
+
+    // ===================== COMBAT =====================
     else if (chara->state == COMBAT)
     {
-        if (chara->gif_status[chara->state]->done)
+        // === FIX: 移除依賴 done（改由 anime_time 控制）
+        if (chara->gif_status[COMBAT]->display_index == 3 &&
+            chara->new_proj == false)
         {
-            chara->state = STOP;
-            chara->new_proj = false;
-        }
-        if (chara->gif_status[COMBAT]->display_index == 3 && chara->new_proj == false)
-        {
-            Elements *pro;
-            float dx = DC->mouse.x - (chara->x + chara->width*0.5);
-            float dy = DC->mouse.y - (chara->y + chara->height*0.5);
+            float cx = chara->x + chara->width*0.5;
+            float cy = chara->y + chara->height*0.5;
 
-            const int reach = 200;      // 攻擊距離
-            const int thick = 300;      // 攻擊寬度
+            float dx = DC->mouse.x - cx;
+            float dy = DC->mouse.y - cy;
 
-            float cx = chara->x + chara->width  * 0.5f;
-            float cy = chara->y + chara->height * 0.5f;
+            const int reach = 200;
+            const int thick = 300;
 
-            float angle = atan2f(dy, dx);   // [-π, π]
-            int x1,y1,x2,y2;
-
-            // 依角度歸類方向
+            float angle = atan2f(dy, dx);
             int dir;
-            if (angle > -M_PI/4 && angle <=  M_PI/4)      dir = 0; // 右
-            else if (angle >  M_PI/4 && angle <= 3*M_PI/4) dir = 1; // 下
-            else if (angle > -3*M_PI/4 && angle <=-M_PI/4) dir = 2; // 上
-            else                                            dir = 3; // 左
+            if (angle > -M_PI/4 && angle <= M_PI/4)      dir = 0;
+            else if (angle > M_PI/4 && angle <= 3*M_PI/4) dir = 1;
+            else if (angle > -3*M_PI/4 && angle <=-M_PI/4) dir = 2;
+            else                                          dir = 3;
 
+            int x1,y1,x2,y2;
             switch (dir) {
-                case 0: // → 右
-                    x1 = cx;
-                    y1 = cy - thick/2;
-                    x2 = cx + reach;
-                    y2 = cy + thick/2;
+                case 0:
+                    x1 = cx;          y1 = cy-thick/2;
+                    x2 = cx+reach;    y2 = cy+thick/2;
                     break;
-                case 1: // ↓ 下
-                    x1 = cx - thick/2;
-                    y1 = cy;
-                    x2 = cx + thick/2;
-                    y2 = cy + reach;
+                case 1:
+                    x1 = cx-thick/2;  y1 = cy;
+                    x2 = cx+thick/2;  y2 = cy+reach;
                     break;
-                case 2: // ↑ 上
-                    x1 = cx - thick/2;
-                    y1 = cy - reach;
-                    x2 = cx + thick/2;
-                    y2 = cy;
+                case 2:
+                    x1 = cx-thick/2;  y1 = cy-reach;
+                    x2 = cx+thick/2;  y2 = cy;
                     break;
-                case 3: // ← 左
-                    x1 = cx - reach;
-                    y1 = cy - thick/2;
-                    x2 = cx;
-                    y2 = cy + thick/2;
+                case 3:
+                    x1 = cx-reach;    y1 = cy-thick/2;
+                    x2 = cx;          y2 = cy+thick/2;
                     break;
             }
 
-            pro = New_Combat(Combat_L, x1, y1, x2, y2, chara->damage, 0);                                      
-            if(pro)
-            {
-                sceneManager.RegisterElement(pro);
-            }
+            Elements *pro = New_Combat(Combat_L, x1,y1,x2,y2, chara->damage, 0);
+            if(pro) sceneManager.RegisterElement(pro);
+
             chara->new_proj = true;
         }
     }
-    else if(chara->state == EARTHQUAKE)
+
+    // ===================== EARTHQUAKE =====================
+    else if (chara->state == EARTHQUAKE)
     {
-        if (chara->gif_status[chara->state]->done)
+        if (chara->gif_status[EARTHQUAKE]->display_index == 4 &&
+            chara->new_proj == false &&
+            chara->e_timer <= 0)
         {
-            chara->state = STOP;
-            chara->new_proj = false;
-        }
-        if (chara->gif_status[EARTHQUAKE]->display_index == 4 && chara->new_proj == false   && chara->e_timer <=0)
-        {
-            chara->e_timer =60;
-            Elements *pro;
-            pro = New_Earthquake(Earthquake_L,chara->x + chara->width*0.5-192.0, chara->y + chara->height*0.5-100.0, chara->damage, 0);                                      
-            if(pro)sceneManager.RegisterElement(pro);
+            chara->e_timer = 60;
+
+            Elements *pro = New_Earthquake(
+                Earthquake_L,
+                chara->x + chara->width*0.5 - 192.0,
+                chara->y + chara->height*0.5 - 100.0,
+                chara->damage,
+                0
+            );
+            if(pro) sceneManager.RegisterElement(pro);
+
             chara->new_proj = true;
         }
     }
 }
+
 void susu_draw(Elements *self)
 {
     // with the state, draw corresponding image

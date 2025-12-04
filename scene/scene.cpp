@@ -36,23 +36,28 @@ void Scene::Update()
 {
     for (Elements *ele : objects)
     {
-        if (ele && ele->Update)
-        {
+        if (!ele || ele->dele) continue;     // ★ 新增：刪除標記的不再更新
+
+        if (ele->Update)
             ele->Update(ele);
-        }
+
+        if (ele->Interact)                  // ★ 新增：每幀呼叫 Interact
+            ele->Interact(ele);
     }
 }
+
 
 void Scene::Draw()
 {
     for (Elements *ele : objects)
     {
-        if (ele && ele->Draw)
+        if (ele && !ele->dele && ele->Draw)   // ★ 多了 !ele->dele
         {
             ele->Draw(ele);
         }
     }
 }
+
 
 void Scene::Destroy()
 {

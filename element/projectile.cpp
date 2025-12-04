@@ -53,6 +53,17 @@ void _Projectile_update_position(Elements *self, int dx, int dy)
 }
 void Projectile_interact(Elements *self)
 {
+    Projectile *Obj = (Projectile *)self->entity;
+
+    // ==== 【修改 1：一進來先做邊界刪除】 ====
+    if (Obj->x < -Obj->width || Obj->x > DataCenter::WIDTH + Obj->width ||
+        Obj->y < -Obj->height || Obj->y > DataCenter::HEIGHT + Obj->height)
+    {
+        self->dele = true;
+        return;
+    }
+    // ========================================
+
     for (int j = 0; j < self->inter_len; j++)
     {
         int inter_label = self->inter_obj[j];
@@ -70,6 +81,7 @@ void Projectile_interact(Elements *self)
         }
     }
 }
+
 void _Projectile_interact_Floor(Elements *self, Elements *tar)
 {
     Projectile *Obj = ((Projectile *)(self->entity));

@@ -172,29 +172,10 @@ void MenuScene::Destroy()
 
     // 下面這些是否要 destroy，要看 FontCenter / ImageCenter 是否自己管理
     // 目前先保留你原本的寫法，如果之後有 double free 再一起調整
-    if (enter_icon)
-    {
-        al_destroy_bitmap(enter_icon);
-        enter_icon = nullptr;
-    }
-
-    if (character_image)
-    {
-        al_destroy_bitmap(character_image);
-        character_image = nullptr;
-    }
-
-    if (title_font)
-    {
-        al_destroy_font(title_font);
-        title_font = nullptr;
-    }
-
-    if (info_font)
-    {
-        al_destroy_font(info_font);
-        info_font = nullptr;
-    }
+    enter_icon = nullptr;
+    character_image = nullptr;
+    title_font = nullptr;
+    info_font = nullptr;
 }
 
 void MenuScene::UpdatePreviousInputs()

@@ -5,6 +5,8 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 
+struct susu;
+
 /*
  * OOP 版 GameScene：
  * - 繼承 Scene
@@ -35,6 +37,7 @@ private:
     void HandlePauseMenu();
     void UpdatePreviousInputs();
     void UpdateBackgroundByLevel();
+    void ReturnToMenuAfterStage(susu *chara);
 
     // 繪製額外畫面：HUD / 暫停 / 死亡 / 過關
     void DrawOverlay();

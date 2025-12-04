@@ -270,6 +270,21 @@ void GameScene::CleanupElements()
     objs.clear();
 }
 
+void GameScene::ReturnToMenuAfterStage(susu *chara)
+{
+    DataCenter *dc = DataCenter::get_instance();
+    if (chara)
+        chara->base.hp = chara->base.full_hp;
+
+    for (int i = 0; i < 5; ++i)
+        switch_level[i] = 0;
+
+    is_dead = false;
+    is_win  = false;
+    SetNextSceneLabel(Menu_L);
+    scene_end = true;
+}
+
 /*------------------------------------------------------------
  *  Private：死亡 / 過關狀態更新（搬自 C 版）
  *-----------------------------------------------------------*/
@@ -278,15 +293,19 @@ void GameScene::UpdateLevelState()
 {
     DataCenter *dc = DataCenter::get_instance();
 
-    // 判斷是否過關
-    if (is_over())
-        is_win = true;
-
     // 判斷玩家血量
     Elements *player = get_susu();
     susu *chara      = nullptr;
     if (player && player->entity)
         chara = static_cast<susu *>(player->entity);
+    
+    // 判斷是否過關
+    if (is_over())
+    {
+        is_win = true;
+        if (!scene_end)
+            ReturnToMenuAfterStage(chara);
+    }
 
     if (chara && chara->base.hp <= 0)
         is_dead = true;
@@ -297,18 +316,7 @@ void GameScene::UpdateLevelState()
 
     // 死亡或過關狀態下，按 Enter 離開 GameScene
     if ((is_dead || is_win) && enter_pressed)
-    {
-        if (chara)
-            chara->base.hp = chara->base.full_hp;
-
-        for (int i = 0; i < 5; ++i)
-            switch_level[i] = 0;
-
-        is_dead  = false;
-        is_win   = false;
-        SetNextSceneLabel(Menu_L);
-        scene_end = true;   // 不再設定 window，全交給 Game / SceneManager 處理
-    }
+        ReturnToMenuAfterStage(chara);
 }
 
 /*------------------------------------------------------------
