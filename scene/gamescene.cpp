@@ -303,20 +303,21 @@ void GameScene::UpdateLevelState()
     if (is_over())
     {
         is_win = true;
-        if (!scene_end)
-            ReturnToMenuAfterStage(chara);
     }
 
     if (chara && chara->base.hp <= 0)
         is_dead = true;
 
-    bool enter_pressed =
-        dc->key_state[ALLEGRO_KEY_ENTER] &&
-        !dc->prev_key_state[ALLEGRO_KEY_ENTER];
+    if(is_dead || is_win)
+    {
+        if (dc->key_state[ALLEGRO_KEY_ENTER])
+        {
+            dc->key_state[ALLEGRO_KEY_ENTER]= false;
+            ReturnToMenuAfterStage(chara);
+            return;
 
-    // 死亡或過關狀態下，按 Enter 離開 GameScene
-    if ((is_dead || is_win) && enter_pressed)
-        ReturnToMenuAfterStage(chara);
+        }
+    }
 }
 
 /*------------------------------------------------------------

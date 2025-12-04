@@ -61,8 +61,25 @@ void Scene::Draw()
 
 void Scene::Destroy()
 {
-    objects.clear();
-    buffer.clear();
+    for (Elements *ele : objects)
+    {
+        if (!ele) continue;
+        if (ele->Destroy)
+        {
+            // 元素自己會 free(self) / free(entity) 的版本
+            ele->Destroy(ele);
+        }
+        else
+        {
+            // 萬一沒實作 Destroy，至少把東西 free 掉避免 leak
+            if (ele->entity)
+            {
+                free(ele->entity);
+                ele->entity = nullptr;
+            }
+            free(ele);
+        }
+    }
 }
 
 ElementVec Scene::GetLabelElements(int label)
