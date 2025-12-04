@@ -1,6 +1,9 @@
 #include "menuscene.h"
 #include "sceneManager.h"
 #include "../data/DataCenter.h"
+#include "../data/FontCenter.h"
+#include "../data/ImageCenter.h"
+#include "../data/SoundCenter.h"
 
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_audio.h>
@@ -16,7 +19,6 @@ MenuScene::MenuScene()
     info_font = nullptr;
     enter_icon = nullptr;
     character_image = nullptr;
-    menu_bgm = nullptr;
     menu_instance = nullptr;
 }
 
@@ -29,23 +31,31 @@ void MenuScene::Init()
 {
     Scene::Init();
 
-    title_font = al_load_ttf_font("assets/font/pirulen.ttf", 36, 0);
-    info_font = al_load_ttf_font("assets/font/pirulen.ttf", 20, 0);
+    // ==== 字型 ====
+    FontCenter::get_instance()->init();
+    FontCenter *fc = FontCenter::get_instance();
+    title_font = fc->pirulen[FontSize::LARGE];
+    info_font  = fc->pirulen[FontSize::SMALL];
 
-    enter_icon = al_load_bitmap("assets/image/enter.png");
-    character_image = al_load_bitmap("assets/image/chara.png");
-    menu_bgm = al_load_sample("assets/sound/menu.mp3");
+    // ==== 圖片 ====
+    ImageCenter *ic = ImageCenter::get_instance();
+    enter_icon      = ic->get(ImagePath::ENTER_ICON);
+    character_image = ic->get(ImagePath::CHARACTER_IMAGE);
 
-    if (menu_bgm)
+    // ==== 音效 ====
+    SoundCenter *sc = SoundCenter::get_instance();
+
+    // 通常建議在 Game 初始化時呼叫一次 init()
+    // 如果你目前是放在這裡也可以先留著
+    sc->init();
+
+    // 直接用 SoundCenter 播放並取得 instance
+    menu_instance = sc->play("assets/sound/menu.mp3", ALLEGRO_PLAYMODE_LOOP);
+    if (menu_instance)
     {
-        menu_instance = al_create_sample_instance(menu_bgm);
-        if (menu_instance)
-        {
-            al_set_sample_instance_playmode(menu_instance, ALLEGRO_PLAYMODE_LOOP);
-            al_attach_sample_instance_to_mixer(menu_instance, al_get_default_mixer());
-            al_set_sample_instance_gain(menu_instance, 0.1f);
-            al_play_sample_instance(menu_instance);
-        }
+        // play() 裡面已經有 attach + play
+        // 在這裡只需要調設定就好
+        al_set_sample_instance_gain(menu_instance, 0.1f); // 調整音量
     }
 
     SetNextSceneLabel(Menu_L);
@@ -55,8 +65,11 @@ void MenuScene::Update()
 {
     DataCenter *dc = DataCenter::get_instance();
 
-    bool enter_pressed = dc->key_state[ALLEGRO_KEY_ENTER] && !dc->prev_key_state[ALLEGRO_KEY_ENTER];
-    bool esc_pressed = dc->key_state[ALLEGRO_KEY_ESCAPE] && !dc->prev_key_state[ALLEGRO_KEY_ESCAPE];
+    // 讓 SoundCenter 定期清掉播完的 instance
+    SoundCenter::get_instance()->update();
+
+    bool enter_pressed = dc->key_state[ALLEGRO_KEY_ENTER]  && !dc->prev_key_state[ALLEGRO_KEY_ENTER];
+    bool esc_pressed   = dc->key_state[ALLEGRO_KEY_ESCAPE] && !dc->prev_key_state[ALLEGRO_KEY_ESCAPE];
 
     if (enter_pressed)
     {
@@ -75,65 +88,90 @@ void MenuScene::Update()
 void MenuScene::Draw()
 {
     DataCenter *dc = DataCenter::get_instance();
-    float center_x = static_cast<float>(dc->window_width) / 2.0f;
-    float start_y = static_cast<float>(dc->window_height) / 3.0f;
+    float center_x = static_cast<float>(dc->window_width)  / 2.0f;  // 對應 title_x
+    float center_y = static_cast<float>(dc->window_height) / 2.0f;  // 對應 title_y
 
+    // 背景圖：等同於
+    // al_draw_scaled_bitmap(enter_icon, 0, 0, w, h, 0, 0, WIDTH, HEIGHT, 0);
     al_clear_to_color(al_map_rgb(0, 0, 0));
-
     if (enter_icon)
     {
-        float src_w = static_cast<float>(al_get_bitmap_width(enter_icon));
-        float src_h = static_cast<float>(al_get_bitmap_height(enter_icon));
+        float src_w  = static_cast<float>(al_get_bitmap_width(enter_icon));
+        float src_h  = static_cast<float>(al_get_bitmap_height(enter_icon));
         float dest_w = static_cast<float>(dc->window_width);
         float dest_h = static_cast<float>(dc->window_height);
-        al_draw_scaled_bitmap(enter_icon, 0.0f, 0.0f, src_w, src_h, 0.0f, 0.0f, dest_w, dest_h, 0);
+        al_draw_scaled_bitmap(enter_icon,
+                              0.0f, 0.0f, src_w, src_h,
+                              0.0f, 0.0f, dest_w, dest_h,
+                              0);
     }
 
-    float overlay_left = 0.0f;
-    float overlay_top = 0.0f;
-    float overlay_right = static_cast<float>(dc->window_width);
-    float overlay_bottom = static_cast<float>(dc->window_height);
-    al_draw_filled_rectangle(overlay_left, overlay_top, overlay_right, overlay_bottom, al_map_rgba(255, 255, 255, 60));
+    // 半透明白色覆蓋整個畫面
+    // 對應：
+    // al_draw_filled_rectangle(title_x - WIDTH/2, title_y - HEIGHT/2,
+    //                          title_x + WIDTH/2, title_y + HEIGHT/2, ...);
+    al_draw_filled_rectangle(center_x - dc->window_width  / 2.0f,
+                             center_y - dc->window_height / 2.0f,
+                             center_x + dc->window_width  / 2.0f,
+                             center_y + dc->window_height / 2.0f,
+                             al_map_rgba(255, 255, 255, 60));
 
+    // 角色圖：完全照 C 版的位置與縮放
     if (character_image)
     {
         float src_w = static_cast<float>(al_get_bitmap_width(character_image));
         float src_h = static_cast<float>(al_get_bitmap_height(character_image));
-        al_draw_scaled_bitmap(character_image, 0.0f, 0.0f, src_w, src_h, 550.0f, 400.0f, 639.0f, 960.0f, 0);
+        al_draw_scaled_bitmap(character_image,
+                              0.0f, 0.0f, src_w, src_h,
+                              550.0f, 400.0f, 639.0f, 960.0f,
+                              0);
     }
 
-    if (title_font)
-    {
-        al_draw_text(title_font, al_color_name("white"), center_x, start_y, ALLEGRO_ALIGN_CENTRE, "Into the Loop");
-    }
-
+    // 上面那條灰色提示框
+    // al_draw_filled_rectangle(title_x - 150, title_y - 30 - 500,
+    //                          title_x + 150, title_y + 30 - 500, ...);
     if (info_font)
     {
-        float line_gap = 60.0f;
-        float hint_box_height = 60.0f;
-        float hint_box_y = start_y - static_cast<float>(dc->window_height) * 0.35f;
-        al_draw_filled_rectangle(center_x - 150.0f, hint_box_y, center_x + 150.0f, hint_box_y + hint_box_height, al_map_rgba(128, 128, 128, 128));
-        al_draw_text(info_font, al_map_rgb(255, 255, 255), center_x, hint_box_y + 15.0f, ALLEGRO_ALIGN_CENTRE, "Press 'Enter' to start");
-        al_draw_text(info_font, al_color_name("lightgray"), center_x, start_y + line_gap, ALLEGRO_ALIGN_CENTRE, "Press Enter to start");
-        al_draw_text(info_font, al_color_name("lightgray"), center_x, start_y + 2.0f * line_gap, ALLEGRO_ALIGN_CENTRE, "Press ESC to quit");
+        float box_w = 300.0f;   // 左 150 右 150
+        float box_h = 60.0f;    // 原本是 -30 ~ +30
+        float box_y = center_y - 500.0f - box_h / 2.0f;   // 等同於 center_y - 30 - 500
+
+        // 畫灰色框
+        // al_draw_filled_rectangle(center_x - box_w / 2.0f,
+        //                         box_y,
+        //                         center_x + box_w / 2.0f,
+        //                         box_y + box_h,
+        //                         al_map_rgba(128, 128, 128, 128));
+
+        // 用字體高度來計算 y，讓文字在框內垂直置中
+        float line_h = al_get_font_line_height(info_font);
+        float text_y = box_y + (box_h - line_h) / 2.0f + line_h-30.0f; 
+        // ↑ 因為 y 是 baseline，所以要再加上 line_h
+
+        al_draw_text(info_font,
+                    al_map_rgb(255, 255, 255),
+                    center_x,
+                    text_y,
+                    ALLEGRO_ALIGN_CENTRE,
+                    "Press 'Enter' to start");
     }
+
 }
+
 
 void MenuScene::Destroy()
 {
+    // ==== BGM 部分：交給 SoundCenter 管理記憶體 ====
     if (menu_instance)
     {
+        // 只需要停掉，不要 al_destroy_sample_instance()
+        // 因為這個 instance 是由 SoundCenter 建立並持有的
         al_stop_sample_instance(menu_instance);
-        al_destroy_sample_instance(menu_instance);
         menu_instance = nullptr;
     }
 
-    if (menu_bgm)
-    {
-        al_destroy_sample(menu_bgm);
-        menu_bgm = nullptr;
-    }
-
+    // 下面這些是否要 destroy，要看 FontCenter / ImageCenter 是否自己管理
+    // 目前先保留你原本的寫法，如果之後有 double free 再一起調整
     if (enter_icon)
     {
         al_destroy_bitmap(enter_icon);

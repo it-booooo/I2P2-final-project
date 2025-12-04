@@ -1,10 +1,6 @@
 #include "DataCenter.h"
 #include <cstring>
-#include "../Level.h"
 #include "../Player.h"
-#include "../monsters/Monster.h"
-#include "../towers/Tower.h"
-#include "../towers/Bullet.h"
 
 // fixed settings
 
@@ -20,12 +16,12 @@ DataCenter::DataCenter()
 	memset(mouse_state, false, sizeof(mouse_state));
 	memset(prev_mouse_state, false, sizeof(prev_mouse_state));
 	player = new Player();
-	level = new Level();
+	//level = new Level();
 }
 
 DataCenter::~DataCenter() {
 	delete player;
-	delete level;
+	//delete level;
 	for(Monster *&m : monsters) {
 		delete m;
 	}

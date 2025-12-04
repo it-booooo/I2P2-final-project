@@ -151,7 +151,7 @@ void GameScene::Update()
 
 void GameScene::Draw()
 {
-    std::printf("GameScene::Draw\n");
+    //std::printf("GameScene::Draw\n");
     const int W = DataCenter::WIDTH;
     const int H = DataCenter::HEIGHT;
 

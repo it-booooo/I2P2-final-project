@@ -41,6 +41,10 @@ namespace ImagePath {
     // Tile
     inline const char FLOOR_TILE[] = "./assets/image/floor_tile.png";
     inline const char WALL_TILE[]  = "./assets/image/wall_tile.png";
+
+	// Menu
+	inline const char ENTER_ICON[] = "./assets/image/enter.png";
+	inline const char CHARACTER_IMAGE[] = "./assets/image/chara.png";
 }
 
 #endif
