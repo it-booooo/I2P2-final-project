@@ -7,25 +7,47 @@
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 #include <algorithm>
+#include <cstdio>
 /*
    [Earthquake function]
 */
+static ALLEGRO_BITMAP *earthquake_img;
+static bool earthquake_img_failed;
+
 Elements *New_Earthquake(int label, int x, int y, int damage,int side)
 {
     Earthquake *entity = (Earthquake *)malloc(sizeof(Earthquake));
     Elements *pObj = New_Elements(label);
     // setting derived object member
-    entity->img = al_load_bitmap("assets/image/earthquake.png");
-    entity->width = al_get_bitmap_width(entity->img);
-    entity->height = al_get_bitmap_height(entity->img);
+    if (!earthquake_img && !earthquake_img_failed)
+    {
+        earthquake_img = al_load_bitmap("assets/image/earthquake.png");
+        if (!earthquake_img)
+        {
+            std::printf("[New_Earthquake] failed to load assets/image/earthquake.png\n");
+            earthquake_img_failed = true;
+        }
+    }
+    entity->img = earthquake_img;
+    entity->width = 0;
+    entity->height = 0;
+    if (entity->img)
+    {
+        entity->width = al_get_bitmap_width(entity->img);
+        entity->height = al_get_bitmap_height(entity->img);
+    }
     entity->x = x;
     entity->y = y;
     entity->damage = damage;
     entity->side = side;
     entity->timer = 30;
-    entity->hitbox = New_Circle(entity->x + entity->width / 2,
-                                     entity->y + entity->height / 2,
-                                     std::min(entity->width, entity->height) / 2);
+    entity->hitbox = nullptr;
+    if (entity->width > 0 && entity->height > 0)
+    {
+        entity->hitbox = New_Circle(entity->x + entity->width / 2,
+                                         entity->y + entity->height / 2,
+                                         std::min(entity->width, entity->height) / 2);
+    }
     // setting the interact object
     pObj->inter_obj[pObj->inter_len++] = tungtungtung_L;
     pObj->inter_obj[pObj->inter_len++] = Susu_L;
@@ -86,13 +108,35 @@ void Earthquake_interact(Elements *self)
 void Earthquake_draw(Elements *self)
 {
     Earthquake *Obj = ((Earthquake *)(self->entity));
-    al_draw_bitmap(Obj->img,Obj->x,Obj->y, 0);
+    if (Obj->img)
+    {
+        al_draw_bitmap(Obj->img,Obj->x,Obj->y, 0);
+    }
+    else
+    {
+        std::printf("[Earthquake_draw] skip draw because img is null\n");
+    }
 }
 void Earthquake_destory(Elements *self)
 {
-    Earthquake *Obj = ((Earthquake *)(self->entity));
-    al_destroy_bitmap(Obj->img);
-    delete Obj->hitbox;
+    if (!self || !self->entity)
+    {
+        std::printf("[Earthquake_destory] skip null self/entity\n");
+        return;
+    }
+
+    Earthquake *Obj = static_cast<Earthquake *>(self->entity);
+    std::printf("[Earthquake_destory] entity=%p img=%p hitbox=%p\n",
+                static_cast<void *>(Obj),
+                static_cast<void *>(Obj->img),
+                static_cast<void *>(Obj->hitbox));
+
+    Obj->img = nullptr;
+    if (Obj->hitbox)
+    {
+        delete Obj->hitbox;
+        Obj->hitbox = nullptr;
+    }
     free(Obj);
-    free(self);
+    self->entity = nullptr;
 }

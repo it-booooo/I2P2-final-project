@@ -13,6 +13,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_ttf.h>
+#include <cstddef>
 #include <cstdio>
 
 /*------------------------------------------------------------
@@ -212,6 +213,8 @@ void GameScene::Destroy()
     pause_font      = nullptr;
     std::printf("[GameScene::Destroy] begin\n");
 
+    std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
+
     std::printf("  before CleanupElements\n");
     CleanupElements();
     std::printf("  after CleanupElements\n");
@@ -286,26 +289,47 @@ void GameScene::InitializeElements()
 void GameScene::CleanupElements()
 {
     std::vector<Elements *> &objs = Objects();
-    for (Elements *ele : objs)
+    std::printf("[CleanupElements] begin, count=%zu\n", objs.size());
+    std::size_t idx = 0;
+    for (Elements *&ele : objs)
     {
-        if (!ele) continue;
+        if (!ele)
+        {
+            std::printf("  #%zu skip (null pointer)\n", idx);
+            ++idx;
+            continue;
+        }
 
-        if (ele->Destroy)
+        std::printf("  #%zu label=%d dele=%d entity=%p destroy=%p\n",
+                    idx,
+                    ele->label,
+                    static_cast<int>(ele->dele),
+                    ele->entity,
+                    reinterpret_cast<void *>(ele->Destroy));
+
+        Elements *target = ele;
+        ele = nullptr;
+
+        if (target->Destroy)
         {
-            ele->Destroy(ele);   // 像 Earthquake 這種自己 free 的
+            std::printf("    call Destroy for #%zu\n", idx);
+            target->Destroy(target);   // 元件自行釋放 entity 內資源
+            std::printf("    Destroy done for #%zu\n", idx);
         }
-        else
+        else if (target->entity)
         {
-            // 沒有實作 Destroy 的，照舊用 C 風格 free
-            if (ele->entity)
-            {
-                free(ele->entity);
-                ele->entity = nullptr;
-            }
-            free(ele);
+            // 沒有自訂 Destroy 的，照舊用 C 風格 free entity
+            free(target->entity);
+            target->entity = nullptr;
         }
+
+        delete target;   // Elements wrapper 一律改由此處 delete
+
+        std::printf("  #%zu done\n", idx);
+        ++idx;
     }
     objs.clear();   //  很重要，避免之後又拿這些 dangling pointer 來用
+    std::printf("[CleanupElements] end\n");
 }
 
 

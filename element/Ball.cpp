@@ -133,6 +133,5 @@ void Ball_destory(Elements *self)
     Elements &wrapper = *self;
     Ball &Obj = *static_cast<Ball *>(wrapper.entity);
     delete Obj.hitbox;
-    free(&Obj);
-    free(self);
+    free(wrapper.entity);
 }
