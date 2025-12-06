@@ -82,7 +82,13 @@ void Scene::Destroy()
 
         delete target;
     }
+
+    objects.clear();
+    buffer.clear();
+
+    std::printf("[Scene::Destroy] end\n");
 }
+
 
 ElementVec Scene::GetLabelElements(int label)
 {
