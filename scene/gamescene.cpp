@@ -206,12 +206,16 @@ void GameScene::Draw()
 
 void GameScene::Destroy()
 {
+    std::printf("[GameScene::Destroy] begin\n");
+
+    // 這些交給 DataCenter / ImageCenter / FontCenter 管，所以這裡只清 pointer
     background      = nullptr;
     game_background = nullptr;
     floor_tile      = nullptr;
     wall_tile       = nullptr;
     pause_font      = nullptr;
-    std::printf("[GameScene::Destroy] begin\n");
+
+    std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
 
     std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
 
@@ -219,6 +223,7 @@ void GameScene::Destroy()
     CleanupElements();
     std::printf("  after CleanupElements\n");
 
+    // 關卡 / 怪物工廠最後再清
     std::printf("  before Level_switch_Destroy\n");
     Level_switch_Destroy();
     std::printf("  after Level_switch_Destroy\n");
@@ -227,12 +232,9 @@ void GameScene::Destroy()
     MF_Destroy();
     std::printf("  after MF_Destroy\n");
 
-    std::printf("  before Scene::Destroy\n");
-    //Scene::Destroy();
-    std::printf("  after Scene::Destroy\n");
-
     std::printf("[GameScene::Destroy] end\n");
 }
+
 
 /*------------------------------------------------------------
  *  Private：輸入初始化 / 更新
