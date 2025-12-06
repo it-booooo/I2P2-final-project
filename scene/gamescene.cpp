@@ -13,6 +13,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_ttf.h>
+#include <cstddef>
 #include <cstdio>
 
 /*------------------------------------------------------------
@@ -214,10 +215,11 @@ void GameScene::Destroy()
     wall_tile       = nullptr;
     pause_font      = nullptr;
 
-    // ★★★ 先把所有 Elements 刪掉，避免它們的 Destroy 去碰已經被清掉的系統 ★★★
-    std::printf("  before Scene::Destroy\n");
-    Scene::Destroy();
-    std::printf("  after Scene::Destroy\n");
+    std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
+
+    std::printf("  before CleanupElements\n");
+    CleanupElements();
+    std::printf("  after CleanupElements\n");
 
     // 關卡 / 怪物工廠最後再清
     std::printf("  before Level_switch_Destroy\n");
@@ -287,9 +289,23 @@ void GameScene::InitializeElements()
 void GameScene::CleanupElements()
 {
     std::vector<Elements *> &objs = Objects();
+    std::printf("[CleanupElements] begin, count=%zu\n", objs.size());
+    std::size_t idx = 0;
     for (Elements *&ele : objs)
     {
-        if (!ele) continue;
+        if (!ele)
+        {
+            std::printf("  #%zu skip (null pointer)\n", idx);
+            ++idx;
+            continue;
+        }
+
+        std::printf("  #%zu label=%d dele=%d entity=%p destroy=%p\n",
+                    idx,
+                    ele->label,
+                    static_cast<int>(ele->dele),
+                    ele->entity,
+                    reinterpret_cast<void *>(ele->Destroy));
 
         Elements *target = ele;
         ele = nullptr;
@@ -306,8 +322,12 @@ void GameScene::CleanupElements()
         }
 
         delete target;   // Elements wrapper 一律改由此處 delete
+
+        std::printf("  #%zu done\n", idx);
+        ++idx;
     }
     objs.clear();   //  很重要，避免之後又拿這些 dangling pointer 來用
+    std::printf("[CleanupElements] end\n");
 }
 
 
