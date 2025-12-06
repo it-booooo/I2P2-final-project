@@ -11,12 +11,18 @@
 /*
    [Earthquake function]
 */
+static ALLEGRO_BITMAP *earthquake_img;
+
 Elements *New_Earthquake(int label, int x, int y, int damage,int side)
 {
     Earthquake *entity = (Earthquake *)malloc(sizeof(Earthquake));
     Elements *pObj = New_Elements(label);
     // setting derived object member
-    entity->img = al_load_bitmap("assets/image/earthquake.png");
+    if (!earthquake_img)
+    {
+        earthquake_img = al_load_bitmap("assets/image/earthquake.png");
+    }
+    entity->img = earthquake_img;
     entity->width = al_get_bitmap_width(entity->img);
     entity->height = al_get_bitmap_height(entity->img);
     entity->x = x;
@@ -103,11 +109,7 @@ void Earthquake_destory(Elements *self)
                 static_cast<void *>(Obj->img),
                 static_cast<void *>(Obj->hitbox));
 
-    if (Obj->img)
-    {
-        al_destroy_bitmap(Obj->img);
-        Obj->img = nullptr;
-    }
+    Obj->img = nullptr;
     if (Obj->hitbox)
     {
         delete Obj->hitbox;
