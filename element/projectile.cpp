@@ -113,5 +113,5 @@ void Projectile_destory(Elements *self)
     al_destroy_bitmap(Obj->img);
     delete Obj->hitbox;
     free(Obj);
-    free(self);
+    delete self;
 }

@@ -113,7 +113,9 @@ void trippi_troppi_destory(Elements *self)
 {
     auto *ch = static_cast<trippi_troppi *>(self->entity);
     for(int i=0;i<3;++i) if(ch->img[i]) al_destroy_bitmap(ch->img[i]);
-    delete ch->base.hitbox; delete ch; free(self);
+    delete ch->base.hitbox;
+    free(ch);
+    delete self;
 }
 static void _trippi_update_position(Elements *self,int dx,int dy)
 {

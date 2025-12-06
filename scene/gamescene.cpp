@@ -302,7 +302,7 @@ void GameScene::CleanupElements()
                 free(ele->entity);
                 ele->entity = nullptr;
             }
-            free(ele);
+            delete ele;
         }
     }
     objs.clear();   //  很重要，避免之後又拿這些 dangling pointer 來用

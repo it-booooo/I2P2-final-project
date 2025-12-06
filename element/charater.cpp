@@ -172,7 +172,7 @@ void Character_destory(Elements *self)
         algif_destroy_animation(Obj->gif_status[i]);
     delete Obj->hitbox;
     free(Obj);
-    free(self);
+    delete self;
 }
 
 void _Character_update_position(Elements *self, int dx, int dy)
