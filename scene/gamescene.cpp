@@ -221,6 +221,8 @@ void GameScene::Destroy()
 
     std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
 
+    std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
+
     std::printf("  before CleanupElements\n");
     CleanupElements();
     std::printf("  after CleanupElements\n");
