@@ -45,13 +45,13 @@ GameScene::~GameScene()
  *  Init：場景初始化
  *-----------------------------------------------------------*/
 
- void GameScene::init_resources()
- {
+void GameScene::init_resources()
+{
     al_init_image_addon();
     al_init_ttf_addon();
     al_init_font_addon();
     FontCenter::get_instance()->init();
- }
+}
 
 void GameScene::Init()
 {
@@ -100,40 +100,58 @@ void GameScene::Update()
 {
     DataCenter *dc = DataCenter::get_instance();
 
-    // 先更新死亡 / 過關狀態（含 Enter 離開場景）
+    // ① 先更新死亡 / 過關狀態（只設 flag，不切場景）
     UpdateLevelState();
+
+    // ② 如果玩家已經死亡或過關：停住遊戲，只處理 Enter
+    if (is_dead)
+    {
+        HandleDead();           // 會在按 Enter 時呼叫 ReturnToMenuAfterStage
+        UpdatePreviousInputs();
+        return;
+    }
+    if (is_win)
+    {
+        HandleWin();            // 會在按 Enter 時呼叫 ReturnToMenuAfterStage
+        UpdatePreviousInputs();
+        return;
+    }
+
+    // ③ 如果已經被要求切換場景（例如暫停選單選 Reset / Main Menu）
     if (scene_end)
     {
         UpdatePreviousInputs();
         return;
     }
 
-    // 暫停選單處理（ESC / 上下 / Enter）
-    HandlePauseMenu();
-    if (scene_end)   // 暫停選單可能要求 reset / 回主選單
+    // ④ 暫停選單處理（ESC / ↑ / ↓ / Enter）
+    HandlePause();
+    if (scene_end)
     {
+        // 暫停選單選了 Reset / Main Menu
         UpdatePreviousInputs();
         return;
     }
     if (is_paused)
     {
+        // 暫停中：不更新遊戲邏輯，只維持畫面 + overlay
         UpdatePreviousInputs();
         return;
     }
 
-    // 真正遊戲邏輯：時間 / 關卡 / 元件更新
+    // ⑤ 正常遊戲邏輯：時間 / 關卡 / 元件
     double now = al_get_time();
     if (prev_time == 0.0)
         prev_time = now;
 
-    // 原 C 版：按住 RIGHT 快轉
+    // 按住 RIGHT 快轉（沿用原 C 版的設計）
     if (dc->key_state[ALLEGRO_KEY_RIGHT])
         now += 10.0;
 
     delta_time = now - prev_time;
     prev_time  = now;
 
-    // 關卡邏輯（怪物生成 / 關卡事件等）
+    // 關卡事件（生成怪物、切換 level_no 等）
     Level_switch_Update(this, delta_time);
     // 若之後需要，可恢復：
     // MF_Update(this, delta_time);
@@ -141,7 +159,7 @@ void GameScene::Update()
     // 讓 Scene 處理所有 Elements 的 Update / Interact / 刪除
     Scene::Update();
 
-    // 更新 prev_key / prev_mouse（用來判斷「按一下」）
+    // ⑥ 更新 prev_key / prev_mouse（用來判斷「按一下」）
     UpdatePreviousInputs();
 }
 
@@ -151,7 +169,6 @@ void GameScene::Update()
 
 void GameScene::Draw()
 {
-    //std::printf("GameScene::Draw\n");
     const int W = DataCenter::WIDTH;
     const int H = DataCenter::HEIGHT;
 
@@ -173,8 +190,6 @@ void GameScene::Draw()
     // 原 C 版的白色透明遮罩
     al_draw_filled_rectangle(0, 0, W, H,
                              al_map_rgba(255, 255, 255, 100));
-
-    // Tile map 畫法原本就被註解掉，如果之後要用，可以在這裡用 floor_tile / wall_tile 畫
 
     // 基底 Scene 畫所有 Elements
     Scene::Draw();
@@ -205,7 +220,6 @@ void GameScene::Destroy()
 
     Scene::Destroy();
 }
-
 
 /*------------------------------------------------------------
  *  Private：輸入初始化 / 更新
@@ -270,61 +284,61 @@ void GameScene::CleanupElements()
     objs.clear();
 }
 
-void GameScene::ReturnToMenuAfterStage(susu *chara)
+/*------------------------------------------------------------
+ *  回主選單（死亡 / 勝利後按 Enter）
+ *-----------------------------------------------------------*/
+
+void GameScene::ReturnToMenuAfterStage()//susu *chara)
 {
     DataCenter *dc = DataCenter::get_instance();
-    if (chara)
-        chara->base.hp = chara->base.full_hp;
+    (void)dc; // 目前沒用到，保留給之後擴充
+
+    // if (chara)
+    //     chara->base.hp = chara->base.full_hp;  // 回主選單時幫玩家補滿血
 
     for (int i = 0; i < 5; ++i)
-        switch_level[i] = 0;
+        switch_level[i] = 0;                   // 關卡切換 flag 清空
 
-    is_dead = false;
-    is_win  = false;
-    SetNextSceneLabel(Menu_L);
-    scene_end = true;
+    // 把狀態歸零，避免下次進來還殘留
+    is_dead      = false;
+    is_win       = false;
+    is_paused    = false;
+    pause_option = 0;
+
+    SetNextSceneLabel(Menu_L);  // 告訴 SceneManager 下一個場景是主選單
+    scene_end = true;           // 通知外面這個 GameScene 可以結束了
 }
 
 /*------------------------------------------------------------
- *  Private：死亡 / 過關狀態更新（搬自 C 版）
+ *  Private：死亡 / 過關狀態更新（不直接切場景）
  *-----------------------------------------------------------*/
 
 void GameScene::UpdateLevelState()
 {
-    DataCenter *dc = DataCenter::get_instance();
-
-    // 判斷玩家血量
     Elements *player = get_susu();
     susu *chara      = nullptr;
     if (player && player->entity)
         chara = static_cast<susu *>(player->entity);
-    
-    // 判斷是否過關
-    if (is_over())
+
+    // 只在還沒死、還沒贏的狀態下更新，避免重複判斷
+    if (!is_dead && !is_win)
     {
-        is_win = true;
-    }
+        // 判斷是否過關
+        if (is_over())
+            is_win = true;
 
-    if (chara && chara->base.hp <= 0)
-        is_dead = true;
-
-    if(is_dead || is_win)
-    {
-        if (dc->key_state[ALLEGRO_KEY_ENTER])
-        {
-            dc->key_state[ALLEGRO_KEY_ENTER]= false;
-            ReturnToMenuAfterStage(chara);
-            return;
-
-        }
+        // 判斷玩家是否死亡
+        if (chara && chara->base.hp <= 0)
+            is_dead = true;
     }
 }
 
 /*------------------------------------------------------------
- *  Private：暫停選單（ESC / 上下 / Enter）
+ *  Private：三個「狀態處理」函數
  *-----------------------------------------------------------*/
 
-void GameScene::HandlePauseMenu()
+// 1. 暫停（ESC / ↑ / ↓ / Enter）
+void GameScene::HandlePause()
 {
     DataCenter *dc = DataCenter::get_instance();
 
@@ -383,10 +397,44 @@ void GameScene::HandlePauseMenu()
     }
 }
 
+// 2. 死亡狀態處理（顯示死亡畫面，按 Enter 回主選單）
+void GameScene::HandleDead()
+{
+    DataCenter *dc = DataCenter::get_instance();
+
+    // 這裡改成「只要此刻有按著 Enter 就觸發」
+    if (!dc->key_state[ALLEGRO_KEY_ENTER])
+        return;
+
+    // Elements *player = get_susu();
+    // susu *chara = (player && player->entity)
+    //                 ? static_cast<susu *>(player->entity)
+    //                 : nullptr;
+
+    ReturnToMenuAfterStage();//chara);
+}
+
+
+// 3. 勝利狀態處理（顯示勝利畫面，按 Enter 回主選單）
+void GameScene::HandleWin()
+{
+    DataCenter *dc = DataCenter::get_instance();
+
+    // 同樣：只要有按著 Enter 就觸發
+    if (!dc->key_state[ALLEGRO_KEY_ENTER])
+        return;
+
+    // Elements *player = get_susu();
+    // susu *chara = (player && player->entity)
+    //                 ? static_cast<susu *>(player->entity)
+    //                 : nullptr;
+
+    ReturnToMenuAfterStage();//chara);
+}
+
+
 /*------------------------------------------------------------
  *  Private：地圖 / tile 載入
- *  - 原 C 版會讀 map.txt 填 map[][]，但你現在不用 global.h，
- *    map 也沒有其他地方用，暫時只載入 tile 圖就好。
  *-----------------------------------------------------------*/
 
 void GameScene::LoadMapAndGenerateTiles()
@@ -409,10 +457,6 @@ void GameScene::UpdateBackgroundByLevel()
     {
         // 交給 ImageCenter 做 lazy load & 管理生命週期
         game_background = ic->get(path);
-        // ic->get() 內部已經有 GAME_ASSERT，失敗會直接報錯終止
-        // 如果你想要額外保險，也可以再檢查一次：
-        // if (!game_background)
-        //     std::fprintf(stderr, "Failed to load %s\n", path);
     };
 
     // level_no / is_over 由 level_switch 那邊的程式控制
@@ -471,7 +515,7 @@ void GameScene::UpdateBackgroundByLevel()
 
 void GameScene::DrawOverlay()
 {
-    // 原 OOP 版只有這行
+    // 關卡 HUD（由 level_switch 系統畫）
     Level_switch_DrawOverlay();
 
     if (is_paused)

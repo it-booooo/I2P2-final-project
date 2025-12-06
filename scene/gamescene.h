@@ -34,10 +34,14 @@ private:
 
     // 遊戲狀態更新
     void UpdateLevelState();
-    void HandlePauseMenu();
     void UpdatePreviousInputs();
     void UpdateBackgroundByLevel();
-    void ReturnToMenuAfterStage(susu *chara);
+    void ReturnToMenuAfterStage();//susu *chara);
+
+    // 狀態處理（暫停 / 死亡 / 勝利）
+    void HandlePause();   // ESC / ↑ / ↓ / Enter
+    void HandleDead();    // 死亡畫面下的輸入處理（Enter 回主選單）
+    void HandleWin();     // 勝利畫面下的輸入處理（Enter 回主選單）
 
     // 繪製額外畫面：HUD / 暫停 / 死亡 / 過關
     void DrawOverlay();
