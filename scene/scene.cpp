@@ -61,17 +61,28 @@ void Scene::Draw()
 
 void Scene::Destroy()
 {
+    std::printf("[Scene::Destroy] begin, objects.size() = %zu\n", objects.size());
+
+    size_t idx = 0;
     for (Elements *ele : objects)
     {
-        if (!ele) continue;
+        if (!ele) {
+            std::printf("  [%zu] ele = nullptr, skip\n", idx);
+            ++idx;
+            continue;
+        }
+
+        int label = ele->label;  // 先存起來，避免 free 後再讀
+
+        std::printf("  [%zu] destroying element label=%d ptr=%p\n",
+                    idx, label, (void*)ele);
+
         if (ele->Destroy)
         {
-            // 元素自己會 free(self) / free(entity) 的版本
-            ele->Destroy(ele);
+            ele->Destroy(ele);   // 元件自己的 Destroy 要負責 free self + entity
         }
         else
         {
-            // 萬一沒實作 Destroy，至少把東西 free 掉避免 leak
             if (ele->entity)
             {
                 free(ele->entity);
@@ -79,8 +90,17 @@ void Scene::Destroy()
             }
             free(ele);
         }
+
+        std::printf("  [%zu] done element label=%d\n", idx, label);
+        ++idx;
     }
+
+    objects.clear();
+    buffer.clear();
+
+    std::printf("[Scene::Destroy] end\n");
 }
+
 
 ElementVec Scene::GetLabelElements(int label)
 {
