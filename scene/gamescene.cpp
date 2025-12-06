@@ -287,24 +287,25 @@ void GameScene::InitializeElements()
 void GameScene::CleanupElements()
 {
     std::vector<Elements *> &objs = Objects();
-    for (Elements *ele : objs)
+    for (Elements *&ele : objs)
     {
         if (!ele) continue;
 
-        if (ele->Destroy)
+        Elements *target = ele;
+        ele = nullptr;
+
+        if (target->Destroy)
         {
-            ele->Destroy(ele);   // 像 Earthquake 這種自己 free 的
+            target->Destroy(target);   // 元件自行釋放 entity 內資源
         }
-        else
+        else if (target->entity)
         {
-            // 沒有實作 Destroy 的，照舊用 C 風格 free
-            if (ele->entity)
-            {
-                free(ele->entity);
-                ele->entity = nullptr;
-            }
-            free(ele);
+            // 沒有自訂 Destroy 的，照舊用 C 風格 free entity
+            free(target->entity);
+            target->entity = nullptr;
         }
+
+        delete target;   // Elements wrapper 一律改由此處 delete
     }
     objs.clear();   //  很重要，避免之後又拿這些 dangling pointer 來用
 }

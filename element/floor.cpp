@@ -82,5 +82,4 @@ void Floor_destory(Elements *self)
     Floor *Obj = ((Floor *)(self->entity));
     al_destroy_bitmap(Obj->img);
     free(Obj);
-    free(self);
 }

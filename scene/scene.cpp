@@ -61,38 +61,26 @@ void Scene::Draw()
 
 void Scene::Destroy()
 {
-    std::printf("[Scene::Destroy] begin, objects.size() = %zu\n", objects.size());
-
-    size_t idx = 0;
-    for (Elements *ele : objects)
+    for (Elements *&ele : objects)
     {
-        if (!ele) {
-            std::printf("  [%zu] ele = nullptr, skip\n", idx);
-            ++idx;
-            continue;
-        }
+        if (!ele) continue;
 
-        int label = ele->label;  // 先存起來，避免 free 後再讀
+        Elements *target = ele;
+        ele = nullptr;
 
-        std::printf("  [%zu] destroying element label=%d ptr=%p\n",
-                    idx, label, (void*)ele);
-
-        if (ele->Destroy)
+        if (target->Destroy)
         {
-            ele->Destroy(ele);   // 元件自己的 Destroy 要負責 free self + entity
+            // 元素自己會負責釋放 entity 內部資源
+            target->Destroy(target);
         }
-        else
+        else if (target->entity)
         {
-            if (ele->entity)
-            {
-                free(ele->entity);
-                ele->entity = nullptr;
-            }
-            free(ele);
+            // 萬一沒實作 Destroy，至少把 entity free 掉避免 leak
+            free(target->entity);
+            target->entity = nullptr;
         }
 
-        std::printf("  [%zu] done element label=%d\n", idx, label);
-        ++idx;
+        delete target;
     }
 
     objects.clear();
