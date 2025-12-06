@@ -61,24 +61,26 @@ void Scene::Draw()
 
 void Scene::Destroy()
 {
-    for (Elements *ele : objects)
+    for (Elements *&ele : objects)
     {
         if (!ele) continue;
-        if (ele->Destroy)
+
+        Elements *target = ele;
+        ele = nullptr;
+
+        if (target->Destroy)
         {
-            // 元素自己會 free(self) / free(entity) 的版本
-            ele->Destroy(ele);
+            // 元素自己會負責釋放 entity 內部資源
+            target->Destroy(target);
         }
-        else
+        else if (target->entity)
         {
-            // 萬一沒實作 Destroy，至少把東西 free 掉避免 leak
-            if (ele->entity)
-            {
-                free(ele->entity);
-                ele->entity = nullptr;
-            }
-            free(ele);
+            // 萬一沒實作 Destroy，至少把 entity free 掉避免 leak
+            free(target->entity);
+            target->entity = nullptr;
         }
+
+        delete target;
     }
 }
 

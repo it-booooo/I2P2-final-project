@@ -123,7 +123,6 @@ void Hpbar_destroy(Elements *self)
     //free(Obj->hitbox);
     al_destroy_font(Obj->font);
     free(Obj);
-    free(self);
 }
 
 

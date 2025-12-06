@@ -206,7 +206,6 @@ void tungtungtung_destory(Elements *self)
     /* 釋放 hitbox 與物件本身 */
     delete chara->base.hitbox;
     free(chara);
-    free(self);
 }
 
 /* --------------------------------------------------
