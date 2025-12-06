@@ -217,6 +217,8 @@ void GameScene::Destroy()
 
     std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
 
+    std::printf("  [GameScene] objects before cleanup: %zu\n", Objects().size());
+
     std::printf("  before CleanupElements\n");
     CleanupElements();
     std::printf("  after CleanupElements\n");
@@ -312,7 +314,9 @@ void GameScene::CleanupElements()
 
         if (target->Destroy)
         {
+            std::printf("    call Destroy for #%zu\n", idx);
             target->Destroy(target);   // 元件自行釋放 entity 內資源
+            std::printf("    Destroy done for #%zu\n", idx);
         }
         else if (target->entity)
         {
