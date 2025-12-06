@@ -7,6 +7,7 @@
 #include "../scene/gamescene.h" // for element label
 #include "../scene/sceneManager.h" // for scene variable
 #include <algorithm>
+#include <cstdio>
 /*
    [Earthquake function]
 */
@@ -90,9 +91,28 @@ void Earthquake_draw(Elements *self)
 }
 void Earthquake_destory(Elements *self)
 {
-    Earthquake *Obj = ((Earthquake *)(self->entity));
-    al_destroy_bitmap(Obj->img);
-    delete Obj->hitbox;
+    if (!self || !self->entity)
+    {
+        std::printf("[Earthquake_destory] skip null self/entity\n");
+        return;
+    }
+
+    Earthquake *Obj = static_cast<Earthquake *>(self->entity);
+    std::printf("[Earthquake_destory] entity=%p img=%p hitbox=%p\n",
+                static_cast<void *>(Obj),
+                static_cast<void *>(Obj->img),
+                static_cast<void *>(Obj->hitbox));
+
+    if (Obj->img)
+    {
+        al_destroy_bitmap(Obj->img);
+        Obj->img = nullptr;
+    }
+    if (Obj->hitbox)
+    {
+        delete Obj->hitbox;
+        Obj->hitbox = nullptr;
+    }
     free(Obj);
-    free(self);
+    self->entity = nullptr;
 }
