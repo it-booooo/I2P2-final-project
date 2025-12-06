@@ -142,13 +142,24 @@ void tralala_update(Elements *self)
                                          EARTHQUAKE_DAMAGE,
                                          chara->base.side);
         if (quake) {
+            static ALLEGRO_BITMAP *waterwave_img;
+            static bool waterwave_img_failed;
             Earthquake *eq = reinterpret_cast<Earthquake *>(quake->entity);
-            /* 換貼圖 */
-            al_destroy_bitmap(eq->img);
-            eq->img = al_load_bitmap("assets/image/waterwave.png");
-            /* 重新取得寬高 */
-            eq->width  = al_get_bitmap_width(eq->img);
-            eq->height = al_get_bitmap_height(eq->img);
+
+            if (!waterwave_img && !waterwave_img_failed) {
+                waterwave_img = al_load_bitmap("assets/image/waterwave.png");
+                if (!waterwave_img) {
+                    std::printf("[tralala] failed to load assets/image/waterwave.png\n");
+                    waterwave_img_failed = true;
+                }
+            }
+
+            if (waterwave_img) {
+                eq->img = waterwave_img;
+                eq->width  = al_get_bitmap_width(eq->img);
+                eq->height = al_get_bitmap_height(eq->img);
+            }
+
             /* 置中到 tralala 中心 */
             eq->x = centerX - eq->width  / 2;
             eq->y = centerY - eq->height / 2;
