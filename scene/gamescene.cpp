@@ -105,13 +105,13 @@ void GameScene::Update()
     UpdateLevelState();
 
     // ② 如果玩家已經死亡或過關：停住遊戲，只處理 Enter
-    if (is_dead)
-    {
-        HandleDead();           // 會在按 Enter 時呼叫 ReturnToMenuAfterStage
-        UpdatePreviousInputs();
-        return;
-    }
-    if (is_win)
+    // if (is_dead)
+    // {
+    //     HandleDead();           // 會在按 Enter 時呼叫 ReturnToMenuAfterStage
+    //     UpdatePreviousInputs();
+    //     return;
+    // }
+    if (is_win||is_dead)
     {
         HandleWin();            // 會在按 Enter 時呼叫 ReturnToMenuAfterStage
         UpdatePreviousInputs();
