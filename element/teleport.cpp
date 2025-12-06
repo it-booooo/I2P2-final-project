@@ -79,5 +79,4 @@ void Teleport_destory(Elements *self)
     Teleport &Obj = *static_cast<Teleport *>(wrapper.entity);
     al_destroy_bitmap(Obj.img);
     free(wrapper.entity);
-    delete self;
 }

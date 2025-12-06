@@ -190,7 +190,6 @@ void tralala_destory(Elements *self)
         if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
     delete chara->base.hitbox;
     free(chara);
-    delete self;
 }
 
 /* ---------------- 私有：同步位置 & 邊界 ---------------- */

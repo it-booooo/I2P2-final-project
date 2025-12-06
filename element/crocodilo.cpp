@@ -211,7 +211,6 @@ void crocodilo_destory(Elements *self)
         if (ch->img[i]) al_destroy_bitmap(ch->img[i]);
     delete ch->base.hitbox;
     free(ch);
-    delete self;
 }
 
 static void _croco_update_position(Elements *self, int dx, int dy)

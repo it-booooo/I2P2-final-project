@@ -45,5 +45,4 @@ void Tree_destory(Elements *self)
     al_destroy_bitmap(Obj.img);
     delete Obj.base.hitbox;
     free(wrapper.entity);
-    delete self;
 }
