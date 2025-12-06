@@ -13,7 +13,7 @@ Scene::Scene() : scene_end(false)
 
 Scene::~Scene()
 {
-    Destroy();
+    //Destroy();
 }
 
 void Scene::Init()

@@ -38,7 +38,7 @@ GameScene::GameScene()
 
 GameScene::~GameScene()
 {
-    Destroy();
+    //Destroy();
 }
 
 /*------------------------------------------------------------
@@ -120,6 +120,7 @@ void GameScene::Update()
     // ③ 如果已經被要求切換場景（例如暫停選單選 Reset / Main Menu）
     if (scene_end)
     {
+        std::printf("Scene end triggered, exiting Update\n");
         UpdatePreviousInputs();
         return;
     }
@@ -204,21 +205,30 @@ void GameScene::Draw()
 
 void GameScene::Destroy()
 {
-    // 先 Destroy 所有 Elements
-    CleanupElements();
-
-    // 圖片 / 字型已由 ImageCenter / FontCenter 管理
-    // 這裡只把指標設成 nullptr，避免誤用
     background      = nullptr;
     game_background = nullptr;
     floor_tile      = nullptr;
     wall_tile       = nullptr;
     pause_font      = nullptr;
+    std::printf("[GameScene::Destroy] begin\n");
 
+    std::printf("  before CleanupElements\n");
+    CleanupElements();
+    std::printf("  after CleanupElements\n");
+
+    std::printf("  before Level_switch_Destroy\n");
     Level_switch_Destroy();
-    MF_Destroy();
+    std::printf("  after Level_switch_Destroy\n");
 
-    Scene::Destroy();
+    std::printf("  before MF_Destroy\n");
+    MF_Destroy();
+    std::printf("  after MF_Destroy\n");
+
+    std::printf("  before Scene::Destroy\n");
+    //Scene::Destroy();
+    std::printf("  after Scene::Destroy\n");
+
+    std::printf("[GameScene::Destroy] end\n");
 }
 
 /*------------------------------------------------------------
@@ -278,11 +288,27 @@ void GameScene::CleanupElements()
     std::vector<Elements *> &objs = Objects();
     for (Elements *ele : objs)
     {
-        if (ele && ele->Destroy)
-            ele->Destroy(ele);
+        if (!ele) continue;
+
+        if (ele->Destroy)
+        {
+            ele->Destroy(ele);   // 像 Earthquake 這種自己 free 的
+        }
+        else
+        {
+            // 沒有實作 Destroy 的，照舊用 C 風格 free
+            if (ele->entity)
+            {
+                free(ele->entity);
+                ele->entity = nullptr;
+            }
+            free(ele);
+        }
     }
-    objs.clear();
+    objs.clear();   //  很重要，避免之後又拿這些 dangling pointer 來用
 }
+
+
 
 /*------------------------------------------------------------
  *  回主選單（死亡 / 勝利後按 Enter）
@@ -403,15 +429,37 @@ void GameScene::HandleDead()
     DataCenter *dc = DataCenter::get_instance();
 
     // 這裡改成「只要此刻有按著 Enter 就觸發」
-    if (!dc->key_state[ALLEGRO_KEY_ENTER])
+    // 允許「長按或單擊 Enter」都能觸發，但避免 scene_end 已經設定時重複執行
+    bool enter_down        = dc->key_state[ALLEGRO_KEY_ENTER];
+    bool enter_just_pressed = enter_down && !dc->prev_key_state[ALLEGRO_KEY_ENTER];
+    if (!enter_down && !enter_just_pressed)
         return;
+    if (scene_end)
+        return;
+
+    //DataCenter *dc = DataCenter::get_instance();
+    (void)dc; // 目前沒用到，保留給之後擴充
+
+    // if (chara)
+    //     chara->base.hp = chara->base.full_hp;  // 回主選單時幫玩家補滿血
+
+    for (int i = 0; i < 5; ++i)
+        switch_level[i] = 0;                   // 關卡切換 flag 清空
+
+    // 把狀態歸零，避免下次進來還殘留
+    is_dead      = false;
+    is_win       = false;
+    is_paused    = false;
+    pause_option = 0;
+    SetNextSceneLabel(Menu_L);  // 告訴 SceneManager 下一個場景是主選單
+    scene_end = true;           // 通知外面這個 GameScene 可以結束了
 
     // Elements *player = get_susu();
     // susu *chara = (player && player->entity)
     //                 ? static_cast<susu *>(player->entity)
     //                 : nullptr;
 
-    ReturnToMenuAfterStage();//chara);
+    //ReturnToMenuAfterStage();//chara);
 }
 
 
@@ -419,17 +467,42 @@ void GameScene::HandleDead()
 void GameScene::HandleWin()
 {
     DataCenter *dc = DataCenter::get_instance();
-
     // 同樣：只要有按著 Enter 就觸發
-    if (!dc->key_state[ALLEGRO_KEY_ENTER])
+    bool enter_pressed =
+        dc->key_state[ALLEGRO_KEY_ENTER] &&
+        !dc->prev_key_state[ALLEGRO_KEY_ENTER];
+    if (!enter_pressed)
+    {
+        std::printf("Enter not pressed\n");
         return;
+    }
+        
+    if (scene_end)
+        return;
+    if(enter_pressed)
+    {
+        std::printf("Enter pressed, returning to menu\n");
+
+        // if (chara)
+        //     chara->base.hp = chara->base.full_hp;  // 回主選單時幫玩家補滿血
+
+        for (int i = 0; i < 5; ++i)
+            switch_level[i] = 0;                   // 關卡切換 flag 清空
+
+        // 把狀態歸零，避免下次進來還殘留
+        is_dead      = false;
+        is_win       = false;
+        is_paused    = false;
+        pause_option = 0;
+        SetNextSceneLabel(Menu_L);  // 告訴 SceneManager 下一個場景是主選單
+        scene_end = true;           // 通知外面這個 GameScene 可以結束了
+    }
+    //ReturnToMenuAfterStage();
 
     // Elements *player = get_susu();
     // susu *chara = (player && player->entity)
     //                 ? static_cast<susu *>(player->entity)
     //                 : nullptr;
-
-    ReturnToMenuAfterStage();//chara);
 }
 
 

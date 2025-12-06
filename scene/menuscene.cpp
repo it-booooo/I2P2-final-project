@@ -24,7 +24,7 @@ MenuScene::MenuScene()
 
 MenuScene::~MenuScene()
 {
-    Destroy();
+    //Destroy();
 }
 
 void MenuScene::Init()
