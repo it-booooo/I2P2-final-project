@@ -206,14 +206,18 @@ bool Game::game_update()
         switch (target)
         {
         case Menu_L:
+            std::printf("Creating new MenuScene\n");
             create_scene(Menu_L);
             break;
         case GameScene_L:
+            std::printf("Creating new GameScene\n");
             create_scene(GameScene_L);
             break;
         case -1:
+            std::printf("Exiting game as requested by scene.\n");
             return false;
         default:
+            std::printf("Unknown scene label %d, exiting game.\n", target);
             return false;
         }
     }
@@ -281,22 +285,41 @@ void Game::create_scene(int label)
 {
     if (scene)
     {
+        std::printf("1\n");
         scene->Destroy();
+        std::printf("2\n");
         delete scene;
+        std::printf("3\n");
         scene = nullptr;
+        std::printf("label: %d\n", label);
     }
 
     switch (label)
     {
     case Menu_L:
+        std::printf("Creating MenuScene in switch\n");
         scene = new MenuScene();
         break;
     case GameScene_L:
+        std::printf("Creating GameScene in switch\n");
         scene = new GameScene();
         break;
     default:
+        std::printf("Creating default Scene in switch\n");
         scene = new Scene();
         break;
+    }
+
+    DataCenter *DC = DataCenter::get_instance();
+    for (int i = 0; i < ALLEGRO_KEY_MAX; ++i)
+    {
+        DC->key_state[i]      = false;
+        DC->prev_key_state[i] = false;
+    }
+    for (int i = 0; i < ALLEGRO_MOUSE_MAX_EXTRA_AXES; ++i)
+    {
+        DC->mouse_state[i]      = false;
+        DC->prev_mouse_state[i] = false;
     }
 
     sceneManager.SetScene(scene);
