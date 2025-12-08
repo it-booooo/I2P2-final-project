@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include "bloodman.h" 
 
 /* -------- 陣營常數（僅 0 / 1，避免誤傳） -------- */
 #define SIDE_PLAYER 0
@@ -200,5 +201,27 @@ void DealDamageIfPossible(Elements *target, int damage)
     if (!dmg.hitbox) return;
 
     dmg.hp -= damage;
+
+    // 如果被打的是「怪物」（side == 1），而且 Bloodman 的 Q 吸血 buff 有開啟，就幫 Bloodman 回血
+    if (dmg.side == 1)   // 0 = 玩家, 1 = 怪物（依你 damageable.h 的註解）
+    {
+        Elements *bm_ele = get_bloodman();       // 從 bloodman.cpp 的 singleton 取得 bloodman
+        if (bm_ele && bm_ele->entity)
+        {
+            Bloodman *bm = static_cast<Bloodman *>(bm_ele->entity);
+
+            if (bm->lifesteal_active)
+            {
+                // ★ 吸血量你可以調整：這裡示範吸 50% 傷害
+                int heal = damage / 2;
+
+                bm->base.hp += heal;
+                if (bm->base.hp > bm->base.full_hp)
+                    bm->base.hp = bm->base.full_hp;
+            }
+        }
+    }
+
+
     if (dmg.hp <= 0) tar.dele = true;
 }

@@ -15,6 +15,7 @@ enum ElementLabel {
     Atk_L,
     tungtungtung_L,
     Susu_L,
+    Bloodman_L,
     trippi_troppi_L,
     capuccino_L,
     bananini_L,

@@ -1,31 +1,95 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_native_dialog.h>
+#include <cstdio>
+#include <cmath>
+
 #include "susu.h"
 #include "hpbar.h"
 #include "projectile.h"
 #include "atk.h"
 #include "combat.h"
 #include "earthquake.h"
+#include "bloodman.h"          // ★ 新增：需要 Bloodman 型別 + get_bloodman()
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
 #include "../algif5/algif.h"
 #include "../scene/gamescene.h"
 #include "../data/DataCenter.h"
-#include <allegro5/allegro_native_dialog.h>
-#include <cstdio>
 
 #define M_PI 3.14159265358979323846
+
 /*
    [susu function]
 */
+
+int gControlledCharacter = 1;   // ★ 一開始控制角色1
+
+// ★ 目前操作中的玩家（給血條、怪物用）
+Elements *get_current_player(void)
+{
+    if (gControlledCharacter == 1)
+        return get_susu();
+    else if (gControlledCharacter == 2)
+        return get_bloodman();
+    return nullptr;
+}
 
 static Elements *singleton_susu = NULL; // CHANGED: added singleton pointer to expose susu to other modules
 
 Elements *get_susu(void) // CHANGED: accessor to retrieve the singleton pointer
 {
     return singleton_susu;
+}
+
+// ★ 切換角色時，同步兩個角色的位置＋hitbox
+void SyncCharactersOnSwitch(int newChar)
+{
+    Elements *s_ele = get_susu();
+    Elements *b_ele = get_bloodman();
+
+    if (!s_ele || !b_ele || !s_ele->entity || !b_ele->entity)
+    {
+        // 其中一個還沒生成，就只改控制權
+        gControlledCharacter = newChar;
+        return;
+    }
+
+    susu     *s  = static_cast<susu    *>(s_ele->entity);
+    Bloodman *bm = static_cast<Bloodman*>(b_ele->entity);
+
+    if (gControlledCharacter == 1 && newChar == 2)
+    {
+        // 從角色1 → 角色2：讓 bloodman 繼承 susu 的位置
+        bm->x = s->x;
+        bm->y = s->y;
+
+        if (s->base.hitbox && bm->base.hitbox)
+        {
+            double cx = s->base.hitbox->center_x();
+            double cy = s->base.hitbox->center_y();
+            bm->base.hitbox->update_center_x(cx);
+            bm->base.hitbox->update_center_y(cy);
+        }
+    }
+    else if (gControlledCharacter == 2 && newChar == 1)
+    {
+        // 從角色2 → 角色1：讓 susu 繼承 bloodman 的位置（你現在想要的行為）
+        s->x = bm->x;
+        s->y = bm->y;
+
+        if (s->base.hitbox && bm->base.hitbox)
+        {
+            double cx = bm->base.hitbox->center_x();
+            double cy = bm->base.hitbox->center_y();
+            s->base.hitbox->update_center_x(cx);
+            s->base.hitbox->update_center_y(cy);
+        }
+    }
+
+    gControlledCharacter = newChar;
 }
 
 Elements *New_susu(int label)
@@ -48,9 +112,6 @@ Elements *New_susu(int label)
     al_set_sample_instance_playmode(entity->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
     al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
-
-
-
     // initial the geometric information of susu
     entity->width = entity->gif_status[0]->width;
     entity->height = entity->gif_status[0]->height;
@@ -70,6 +131,9 @@ Elements *New_susu(int label)
     entity->new_proj = false;
     entity->e_timer = 0;
     entity->q_timer = 0;
+    entity->anime      = 0;
+    entity->anime_time = 0;
+
     pObj->entity = entity;
     // setting derived object function
     pObj->Draw = susu_draw;
@@ -80,9 +144,6 @@ Elements *New_susu(int label)
     singleton_susu = pObj; // CHANGED: save pointer to singleton
     return pObj;
 }
-
-
-
 
 void susu_update(Elements *self)
 {
@@ -100,6 +161,29 @@ void susu_update(Elements *self)
     ALLEGRO_MOUSE_STATE state;
     al_get_mouse_state(&state);
     DataCenter *DC = DataCenter::get_instance();
+
+    ALLEGRO_MOUSE_STATE mstate;
+    al_get_mouse_state(&mstate);
+
+    // ★ 角色切換：只在「按下瞬間」觸發，並同步位置
+    bool press1 = DC->key_state[ALLEGRO_KEY_1] && !DC->prev_key_state[ALLEGRO_KEY_1];
+    bool press2 = DC->key_state[ALLEGRO_KEY_2] && !DC->prev_key_state[ALLEGRO_KEY_2];
+
+    if (press1 && gControlledCharacter != 1)
+    {
+        SyncCharactersOnSwitch(1);   // 切回角色1（susu），繼承角色2的位置
+    }
+    else if (press2 && gControlledCharacter != 2)
+    {
+        SyncCharactersOnSwitch(2);   // 切到角色2（bloodman），繼承角色1的位置
+    }
+
+    // ★ 不在操控角色時，不吃輸入
+    if (gControlledCharacter != 1)
+    {
+        chara->state = STOP;   // 或者乾脆什麼都不改
+        return;
+    }
 
     if (DC->key_state[ALLEGRO_KEY_SPACE] == 0)
         space = 0;
@@ -119,7 +203,6 @@ void susu_update(Elements *self)
     }
     // === FIX END ===
     // ============================================================
-
 
     // ===================== STOP =====================
     if (chara->state == STOP)
@@ -372,6 +455,10 @@ void susu_update(Elements *self)
 
 void susu_draw(Elements *self)
 {
+    // ★ 非操作中的角色不畫出來（數值仍保留）
+    if (gControlledCharacter != 1)
+        return;
+
     // with the state, draw corresponding image
     susu *chara = ((susu *)(self->entity));
     DataCenter *DC = DataCenter::get_instance();
@@ -401,9 +488,6 @@ void susu_destroy(Elements *self)
     free(Obj);
     free(self);
 }
-
-
-
 
 void _susu_update_position(Elements *self, int dx, int dy)
 {
