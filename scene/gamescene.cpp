@@ -17,6 +17,8 @@
 #include <cstddef>
 #include <cstdio>
 
+//extern Element *get_current_player();
+
 /*------------------------------------------------------------
  *  建構 / 解構
  *-----------------------------------------------------------*/
@@ -298,6 +300,12 @@ void GameScene::InitializeElements()
         susu *chara = static_cast<susu *>(player1->entity);
         hpbar = New_Hpbar(Hpbar_L, chara->base.full_hp, chara->base.hp);
     }
+    if (player2 && player2->entity)
+    {
+        Bloodman *chara = static_cast<Bloodman *>(player2->entity);
+        hpbar = New_Hpbar(Hpbar_L, chara->base.full_hp, chara->base.hp);
+    }
+
     if (hpbar)
         RegisterElement(hpbar);
 }
@@ -402,7 +410,7 @@ void GameScene::UpdateLevelState()
         // 判斷是否過關
         if (is_over())
             is_win = true;
-
+    }
     if (dmg && dmg->hp <= 0)
         is_dead = true;
 
@@ -418,7 +426,7 @@ void GameScene::UpdateLevelState()
             if (susu_ele && susu_ele->entity)
                 chara = static_cast<susu *>(susu_ele->entity);
 
-            ReturnToMenuAfterStage(chara);
+            ReturnToMenuAfterStage();
             return;
 
         }

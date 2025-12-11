@@ -17,6 +17,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <iostream>
 
 #define M_PI 3.14159265358979323846
 
@@ -38,7 +39,9 @@ Elements *get_bloodman(void)
 
 Elements *New_Bloodman(int label)   // ★ 名稱改成 New_Bloodman，對應 header / GameScene 呼叫
 {
-    Bloodman *entity = (Bloodman *)malloc(sizeof(Bloodman));
+    std::printf("[New_Bloodman] called, singleton_bloodman=%p\n", singleton_bloodman);
+    
+    Bloodman *entity = new Bloodman{};
     Elements *pObj = New_Elements(label);
 
     const char state_string[5][10] = {"stop_2", "move_2", "attack_2", "combat_2", "earth_2"};
@@ -87,6 +90,8 @@ Elements *New_Bloodman(int label)   // ★ 名稱改成 New_Bloodman，對應 he
     pObj->Destroy  = bloodman_destroy;
 
     singleton_bloodman = pObj;
+
+    std::printf("[New_Bloodman] new entity=%p, hp=%d\n", entity, entity->base.hp);
     return pObj;
 }
 
@@ -410,6 +415,8 @@ void bloodman_draw(Elements *self)
 void bloodman_destroy(Elements *self)
 {
     Bloodman *Obj = (Bloodman *)(self->entity);
+    std::printf("[bloodman_destroy] called, Obj=%p, hp=%d\n", Obj, Obj->base.hp);
+
     al_destroy_sample_instance(Obj->atk_Sound);
 
     for (int i = 0; i < 5; i++)
@@ -419,8 +426,13 @@ void bloodman_destroy(Elements *self)
     }
 
     delete Obj->base.hitbox;
-    free(Obj);
-    free(self);
+    Obj->base.hitbox = nullptr;
+    delete Obj;
+    self->entity = nullptr;
+    singleton_bloodman = nullptr;
+
+    std::printf("[bloodman_destroy] done, singleton_bloodman reset to nullptr\n");
+    
 }
 
 void _bloodman_update_position(Elements *self, int dx, int dy)
