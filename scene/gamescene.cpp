@@ -5,6 +5,7 @@
 
 #include "../element/susu.h"
 #include "../element/bloodman.h"
+#include "../element/priest.h"
 #include "../element/hpbar.h"
 #include "../element/level_switch.h"
 #include "../element/monster_factory.h"
@@ -293,6 +294,11 @@ void GameScene::InitializeElements()
     if (player2)
         RegisterElement(player2);
 
+    // ★ 角色3：priest（牧師）
+    Elements *player3 = New_priest(Priest_L);
+    if (player3)
+        RegisterElement(player3);
+
     // 先用 susu 的血量初始化 HP bar，之後在 Hpbar_update 會跟著目前操控角色更新
     Elements *hpbar = nullptr;
     if (player1 && player1->entity)
@@ -399,6 +405,8 @@ void GameScene::UpdateLevelState()
         player = get_susu();
     else if (gControlledCharacter == 2)
         player = get_bloodman();
+    else if (gControlledCharacter == 3)
+        player = get_priest();
 
     Damageable *dmg = nullptr;
     if (player && player->entity)

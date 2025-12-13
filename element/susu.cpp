@@ -4,7 +4,6 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <cstdio>
 #include <cmath>
-
 #include "susu.h"
 #include "hpbar.h"
 #include "projectile.h"
@@ -12,6 +11,7 @@
 #include "combat.h"
 #include "earthquake.h"
 #include "bloodman.h"          // ★ 新增：需要 Bloodman 型別 + get_bloodman()
+#include "priest.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -38,6 +38,8 @@ Elements *get_current_player(void)
         return get_susu();
     else if (gControlledCharacter == 2)
         return get_bloodman();
+    else if (gControlledCharacter == 3)
+        return get_priest();
     return nullptr;
 }
 
@@ -49,52 +51,150 @@ Elements *get_susu(void) // CHANGED: accessor to retrieve the singleton pointer
 }
 
 // ★ 切換角色時，同步兩個角色的位置＋hitbox
+// ★ 切換角色時，同步兩個角色的位置＋hitbox
 void SyncCharactersOnSwitch(int newChar)
 {
     Elements *s_ele = get_susu();
     Elements *b_ele = get_bloodman();
+    Elements *p_ele = get_priest();          // ★ 新增：第三位角色 牧師
 
-    if (!s_ele || !b_ele || !s_ele->entity || !b_ele->entity)
+    // ★ 只要「目標角色」或「目前角色」沒有生成，就只改控制權（避免 crash）
+    if (newChar == 1)
     {
-        // 其中一個還沒生成，就只改控制權
+        if (!s_ele || !s_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (newChar == 2)
+    {
+        if (!b_ele || !b_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (newChar == 3)
+    {
+        if (!p_ele || !p_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+
+    // ★ 目前操控角色也必須存在，否則也只改控制權
+    if (gControlledCharacter == 1)
+    {
+        if (!s_ele || !s_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (gControlledCharacter == 2)
+    {
+        if (!b_ele || !b_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (gControlledCharacter == 3)
+    {
+        if (!p_ele || !p_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+
+    susu     *s  = (s_ele && s_ele->entity) ? static_cast<susu    *>(s_ele->entity) : nullptr;
+    Bloodman *bm = (b_ele && b_ele->entity) ? static_cast<Bloodman*>(b_ele->entity) : nullptr;
+    priest   *pr = (p_ele && p_ele->entity) ? static_cast<priest  *>(p_ele->entity) : nullptr;
+
+    // ★ 同角色切換就不用做事
+    if (gControlledCharacter == newChar)
+        return;
+
+    // ------------------------------------------------------------
+    // ★ 核心：把「目前角色」的位置 / hitbox center，複製到「新角色」
+    // ------------------------------------------------------------
+    int from_x = 0, from_y = 0;
+    Shape *from_hitbox = nullptr;
+
+    if (gControlledCharacter == 1 && s)
+    {
+        from_x = s->x;
+        from_y = s->y;
+        from_hitbox = s->base.hitbox;
+    }
+    else if (gControlledCharacter == 2 && bm)
+    {
+        from_x = bm->x;
+        from_y = bm->y;
+        from_hitbox = bm->base.hitbox;
+    }
+    else if (gControlledCharacter == 3 && pr)
+    {
+        from_x = pr->x;
+        from_y = pr->y;
+        from_hitbox = pr->base.hitbox;
+    }
+    else
+    {
+        // 理論上不會到這，但保險
         gControlledCharacter = newChar;
         return;
     }
 
-    susu     *s  = static_cast<susu    *>(s_ele->entity);
-    Bloodman *bm = static_cast<Bloodman*>(b_ele->entity);
-
-    if (gControlledCharacter == 1 && newChar == 2)
+    if (newChar == 1 && s)
     {
-        // 從角色1 → 角色2：讓 bloodman 繼承 susu 的位置
-        bm->x = s->x;
-        bm->y = s->y;
+        // ★ 新角色 = susu，繼承目前角色的位置
+        s->x = from_x;
+        s->y = from_y;
 
-        if (s->base.hitbox && bm->base.hitbox)
+        if (from_hitbox && s->base.hitbox)
         {
-            double cx = s->base.hitbox->center_x();
-            double cy = s->base.hitbox->center_y();
+            double cx = from_hitbox->center_x();
+            double cy = from_hitbox->center_y();
+            s->base.hitbox->update_center_x(cx);
+            s->base.hitbox->update_center_y(cy);
+        }
+    }
+    else if (newChar == 2 && bm)
+    {
+        // ★ 新角色 = bloodman，繼承目前角色的位置
+        bm->x = from_x;
+        bm->y = from_y;
+
+        if (from_hitbox && bm->base.hitbox)
+        {
+            double cx = from_hitbox->center_x();
+            double cy = from_hitbox->center_y();
             bm->base.hitbox->update_center_x(cx);
             bm->base.hitbox->update_center_y(cy);
         }
     }
-    else if (gControlledCharacter == 2 && newChar == 1)
+    else if (newChar == 3 && pr)
     {
-        // 從角色2 → 角色1：讓 susu 繼承 bloodman 的位置（你現在想要的行為）
-        s->x = bm->x;
-        s->y = bm->y;
+        // ★ 新角色 = priest，繼承目前角色的位置
+        pr->x = from_x;
+        pr->y = from_y;
 
-        if (s->base.hitbox && bm->base.hitbox)
+        if (from_hitbox && pr->base.hitbox)
         {
-            double cx = bm->base.hitbox->center_x();
-            double cy = bm->base.hitbox->center_y();
-            s->base.hitbox->update_center_x(cx);
-            s->base.hitbox->update_center_y(cy);
+            double cx = from_hitbox->center_x();
+            double cy = from_hitbox->center_y();
+            pr->base.hitbox->update_center_x(cx);
+            pr->base.hitbox->update_center_y(cy);
         }
     }
 
     gControlledCharacter = newChar;
 }
+
 
 Elements *New_susu(int label)
 {
@@ -173,6 +273,7 @@ void susu_update(Elements *self)
     // ★ 角色切換：只在「按下瞬間」觸發，並同步位置
     bool press1 = DC->key_state[ALLEGRO_KEY_1] && !DC->prev_key_state[ALLEGRO_KEY_1];
     bool press2 = DC->key_state[ALLEGRO_KEY_2] && !DC->prev_key_state[ALLEGRO_KEY_2];
+    bool press3 = DC->key_state[ALLEGRO_KEY_3] && !DC->prev_key_state[ALLEGRO_KEY_3];
 
     if (press1 && gControlledCharacter != 1)
     {
@@ -181,6 +282,10 @@ void susu_update(Elements *self)
     else if (press2 && gControlledCharacter != 2)
     {
         SyncCharactersOnSwitch(2);   // 切到角色2（bloodman），繼承角色1的位置
+    }
+    else if (press3 && gControlledCharacter != 3)
+    {
+        SyncCharactersOnSwitch(3);   // 切到角色3（牧師）
     }
 
     // ★ 不在操控角色時，不吃輸入
