@@ -4,7 +4,12 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <cstdio>
 #include <cmath>
-
+#include "capuccino.h"
+#include "bananini.h"
+#include "trippi_troppi.h"
+#include "bigtung.h"
+#include "crocodilo.h"
+#include "tralala.h"
 #include "tungtungtung.h"      // ★ E技能拉怪需要 tungtungtung 型別與 tungtungtung_update()
 #include "priest.h"
 #include "susu.h"
@@ -26,6 +31,34 @@
 /*
    [priest function]
 */
+template <class EnemyT>
+static void _pull_one_enemy_to(EnemyT *enemy, int tx, int ty)
+{
+    if (!enemy) return;
+    if (enemy->base.side != 1) return;          // 只拉怪
+    if (!enemy->base.hitbox) return;            // 沒 hitbox（像 mug 無敵）就跳過
+
+    // clamp 到場內（用怪物自己的寬高）
+    if (tx < 0) tx = 0;
+    if (ty < 0) ty = 0;
+    if (tx > DataCenter::WIDTH  - enemy->width)  tx = DataCenter::WIDTH  - enemy->width;
+    if (ty > DataCenter::HEIGHT - enemy->height) ty = DataCenter::HEIGHT - enemy->height;
+
+    int old_x = enemy->x;
+    int old_y = enemy->y;
+
+    enemy->x = tx;
+    enemy->y = ty;
+
+    int real_dx = enemy->x - old_x;
+    int real_dy = enemy->y - old_y;
+
+    Shape *hb = enemy->base.hitbox;
+    const double cx = hb->center_x();
+    const double cy = hb->center_y();
+    hb->update_center_x(cx + real_dx);
+    hb->update_center_y(cy + real_dy);
+}
 
 // ★ priest 單例
 static Elements *singleton_priest = NULL;
@@ -36,57 +69,81 @@ Elements *get_priest(void)
 }
 
 // ===================== E技能：把所有怪物拉到前面 =====================
-// ★ 目前先支援 tungtungtung；
+
 static void _priest_pull_all_monsters_to_front(priest *chara)
 {
     if (!chara) return;
 
-    const int pull_dis = 250;   // 拉到前面多遠（可調）
+    const int pull_dis = 250;
+
     int target_x = chara->x;
     int target_y = chara->y;
 
-    if (chara->dir == 0)       target_x -= pull_dis;  // left
-    else if (chara->dir == 1)  target_x += pull_dis;  // right
-    else if (chara->dir == 2)  target_y -= pull_dis;  // up
-    else if (chara->dir == 3)  target_y += pull_dis;  // down
+    if (chara->dir == 0)       target_x -= pull_dis;
+    else if (chara->dir == 1)  target_x += pull_dis;
+    else if (chara->dir == 2)  target_y -= pull_dis;
+    else if (chara->dir == 3)  target_y += pull_dis;
 
-    ElementVec vec = sceneManager.GetAllElements();
-    for (int i = 0; i < vec.len; i++)
+    // 你要吸的怪物 labels（想加誰就加誰）
+    const int enemy_labels[] = {
+        tungtungtung_L,
+        capuccino_L,
+        bananini_L,
+        trippi_troppi_L,
+        bigtung_L,
+        crocodilo_L,
+        tralala_L,
+        // patapim_L,
+        // ...其他怪
+    };
+
+    for (int k = 0; k < (int)(sizeof(enemy_labels)/sizeof(enemy_labels[0])); k++)
     {
-        Elements *e = vec.arr[i];
-        if (!e || !e->entity) continue;
+        int L = enemy_labels[k];
+        ElementVec vec = sceneManager.GetLabelElements(L);
 
-        // ★ 只拉 tungtungtung，避免誤 cast 其他元素造成 crash
-        if (e->Update != tungtungtung_update) continue;
+        for (int i = 0; i < vec.len; i++)
+        {
+            Elements *e = vec.arr[i];
+            if (!e || !e->entity) continue;
 
-        tungtungtung *enemy = static_cast<tungtungtung *>(e->entity);
+            switch (L)
+            {
+                case tungtungtung_L:
+                    _pull_one_enemy_to(static_cast<tungtungtung*>(e->entity), target_x, target_y);
+                    break;
 
-        // 只拉怪（side == 1），並且必須有 hitbox 才動
-        if (enemy->base.side != 1) continue;
-        if (!enemy->base.hitbox) continue;
+                case capuccino_L:
+                    _pull_one_enemy_to(static_cast<capuccino*>(e->entity), target_x, target_y);
+                    break;
 
-        // 邊界保護（使用 DataCenter 尺寸 + 怪物自身寬高）
-        int tx = target_x;
-        int ty = target_y;
+                case bananini_L:
+                    _pull_one_enemy_to(static_cast<bananini*>(e->entity), target_x, target_y);
+                    break;
 
-        if (tx < 0) tx = 0;
-        if (ty < 0) ty = 0;
-        if (tx > DataCenter::WIDTH  - enemy->width)  tx = DataCenter::WIDTH  - enemy->width;
-        if (ty > DataCenter::HEIGHT - enemy->height) ty = DataCenter::HEIGHT - enemy->height;
+                case trippi_troppi_L:
+                    _pull_one_enemy_to(static_cast<trippi_troppi*>(e->entity), target_x, target_y);
+                    break;
 
-        int dx = tx - enemy->x;
-        int dy = ty - enemy->y;
+                case bigtung_L:
+                    _pull_one_enemy_to(static_cast<bigtung*>(e->entity), target_x, target_y);
+                    break;
 
-        enemy->x = tx;
-        enemy->y = ty;
+                case crocodilo_L:
+                    _pull_one_enemy_to(static_cast<crocodilo*>(e->entity), target_x, target_y);
+                    break;
 
-        Shape *hitbox = enemy->base.hitbox;
-        const double cx = hitbox->center_x();
-        const double cy = hitbox->center_y();
-        hitbox->update_center_x(cx + dx);
-        hitbox->update_center_y(cy + dy);
+                case tralala_L:
+                    _pull_one_enemy_to(static_cast<tralala*>(e->entity), target_x, target_y);
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 }
+
 // =====================================================================
 
 Elements *New_priest(int label)
@@ -190,18 +247,11 @@ void priest_update(Elements *self)
     // ===================== STOP =====================
     if (chara->state == STOP)
     {
-        if (state.buttons & 1)
-        {
-            chara->state = COMBAT;
-            chara->anime = 0;
-            chara->anime_time = 20;
-            chara->new_proj = false;
-        }
 
         // ★ Q技能：無任何技能（注意：不留空的 else-if，避免卡住移動）
         // （所以這裡不寫 Q 分支）
 
-        else if (DC->key_state[ALLEGRO_KEY_E])
+        if (DC->key_state[ALLEGRO_KEY_E])
         {
             if (chara->e_timer <= 0)
             {
@@ -249,18 +299,10 @@ void priest_update(Elements *self)
     // ===================== MOVE =====================
     else if (chara->state == MOVE)
     {
-        if (state.buttons & 1)
-        {
-            chara->state = COMBAT;
-            chara->anime = 0;
-            chara->anime_time = 20;
-            chara->new_proj = false;
-        }
-
         // ★ Q技能：無任何技能（不留空 else-if）
         // （所以這裡不寫 Q 分支）
 
-        else if (DC->key_state[ALLEGRO_KEY_E])
+        if (DC->key_state[ALLEGRO_KEY_E])
         {
             if (chara->e_timer <= 0)
             {
@@ -312,16 +354,11 @@ void priest_update(Elements *self)
             chara->e_timer <= 0)
         {
             chara->e_timer = 60;
-
-            // ★ E技能改成：把所有怪物拉到前面
             _priest_pull_all_monsters_to_front(chara);
 
             chara->new_proj = true;
         }
     }
-
-    // 其他狀態（ATK/COMBAT）如果你也要保留行為，可以照 susu 那份補齊；
-    // 你目前需求只改 Q/E，所以我先保留結構但不強行新增功能。
 }
 
 void priest_draw(Elements *self)

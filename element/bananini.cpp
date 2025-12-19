@@ -4,6 +4,7 @@
 #include "bananini.h"
 #include "susu.h"
 #include "atk.h"
+#include "damageable.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -40,14 +41,33 @@ Elements *New_bananini(int label)
     pD->width  = al_get_bitmap_width (pD->img[0]);
     pD->height = al_get_bitmap_height(pD->img[0]);
 
-    Elements *plE = get_susu();
-    susu *pl = plE ? static_cast<susu *>(plE->entity) : nullptr;
-    do {
+    Elements   *player_ele = get_current_player();
+    Damageable *player     = nullptr;
+    double px = 0.0, py = 0.0;
+
+    if (player_ele && player_ele->entity) {
+        player = reinterpret_cast<Damageable *>(player_ele->entity);
+        if (player->hitbox) {
+            px = player->hitbox->center_x();
+            py = player->hitbox->center_y();
+        }
+    }
+
+    while (true) {
         pD->x = std::rand() % (DataCenter::WIDTH  - pD->width);
         pD->y = std::rand() % (DataCenter::HEIGHT - pD->height);
-    } while (pl &&
-             std::fabs(pD->x - pl->x) < ARRIVE_EPSILON &&
-             std::fabs(pD->y - pl->y) < ARRIVE_EPSILON);
+
+        if (!player || !player->hitbox) break;
+
+        float ex = pD->x + pD->width  * 0.5f;
+        float ey = pD->y + pD->height * 0.5f;
+
+        float dx = ex - (float)px;
+        float dy = ey - (float)py;
+        float dist = std::sqrt(dx * dx + dy * dy);
+
+        if (dist >= ARRIVE_EPSILON) break;
+    }
 
     pD->base.hp   = 60;
     pD->base.side = 1;
@@ -76,14 +96,17 @@ void bananini_update(Elements *self)
     auto *ch = static_cast<bananini *>(self->entity);
     if (ch->cooldown > 0) ch->cooldown--;
 
-    Elements *plE = get_susu();
-    if (!plE) return;
-    auto *pl = static_cast<susu *>(plE->entity);
+    Elements *player_ele = get_current_player();
+    if (!player_ele || !player_ele->entity) return;
+
+    Damageable *pl = reinterpret_cast<Damageable *>(player_ele->entity);
+    if (!pl->hitbox) return;
 
     int cx = ch->x + ch->width  / 2;
     int cy = ch->y + ch->height / 2;
-    int tx = pl->x + pl->width  / 2;
-    int ty = pl->y + pl->height / 2;
+    int tx = (int)pl->hitbox->center_x();
+    int ty = (int)pl->hitbox->center_y();
+
     int dx = tx - cx;
     int dy = ty - cy;
     float dist = std::sqrt(static_cast<float>(dx * dx + dy * dy));

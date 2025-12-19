@@ -4,6 +4,7 @@
 #include "trippi_troppi.h"
 #include "susu.h"          /* get_susu() */
 #include "atk.h"           /* New_Atk() & Atk_set_image() */
+#include "damageable.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -37,13 +38,30 @@ Elements *New_trippi_troppi(int label)
     pD->height = al_get_bitmap_height(pD->img[0]);
 
     /* 隨機出生遠離玩家 */
-    Elements *plE = get_susu();
-    susu *pl = plE ? static_cast<susu *>(plE->entity) : nullptr;
-    do {
-        pD->x = rand()%(DataCenter::WIDTH-pD->width);
-        pD->y = rand()%(DataCenter::HEIGHT-pD->height);
-    } while (pl && fabs(pD->x-pl->x)<ARRIVE_EPSILON &&
-                    fabs(pD->y-pl->y)<ARRIVE_EPSILON);
+    /* 隨機出生遠離「目前玩家」 */
+    Elements   *plE = get_current_player();
+    Damageable *pl  = (plE && plE->entity) ? reinterpret_cast<Damageable *>(plE->entity) : nullptr;
+
+    double px = 0.0, py = 0.0;
+    if (pl && pl->hitbox) {
+        px = pl->hitbox->center_x();
+        py = pl->hitbox->center_y();
+    }
+
+    while (true) {
+        pD->x = rand() % (DataCenter::WIDTH  - pD->width);
+        pD->y = rand() % (DataCenter::HEIGHT - pD->height);
+
+        if (!pl || !pl->hitbox) break;
+
+        float ex = pD->x + pD->width  * 0.5f;
+        float ey = pD->y + pD->height * 0.5f;
+        float dx = ex - (float)px;
+        float dy = ey - (float)py;
+        float dist = sqrtf(dx*dx + dy*dy);
+
+        if (dist >= ARRIVE_EPSILON) break;
+    }
 
     /* Damageable */
     pD->base.hp    = 60;
@@ -62,17 +80,22 @@ Elements *New_trippi_troppi(int label)
     return pE;
 }
 
-/* ---------------- Update ---------------- */
-void trippi_troppi_update(Elements *self)
+    /* ---------------- Update ---------------- */
+void trippi_troppi_update(Elements *self)    
 {
     trippi_troppi *ch = static_cast<trippi_troppi *>(self->entity);
     if (ch->cooldown>0) ch->cooldown--;
+    Elements *plE = get_current_player();
+    if (!plE || !plE->entity) return;
 
-    Elements *plE = get_susu(); if(!plE) return;
-    susu *pl = static_cast<susu *>(plE->entity);
+    Damageable *pl = reinterpret_cast<Damageable *>(plE->entity);
+    if (!pl->hitbox) return;
 
-    int cx=ch->x+ch->width/2,  cy=ch->y+ch->height/2;
-    int tx=pl->x+pl->width/2,  ty=pl->y+pl->height/2;
+    int cx = ch->x + ch->width  / 2;
+    int cy = ch->y + ch->height / 2;
+    int tx = (int)pl->hitbox->center_x();
+    int ty = (int)pl->hitbox->center_y();
+
     int dx=tx-cx, dy=ty-cy;
     float dist = sqrtf((float)dx*dx+(float)dy*dy);
 

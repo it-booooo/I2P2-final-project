@@ -3,6 +3,7 @@
 #include "capuccino.h"
 #include "susu.h"
 #include "combat.h"
+#include "damageable.h"
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h"
 #include "../shapes/Rectangle.h"
@@ -47,23 +48,33 @@ Elements *New_capuccino(int label)
     p->mug_cooldown = MUG_COOLDOWN_FRAMES;
 
     /* 避免出生太近玩家 */
-    Elements *susu_elem = get_susu();
-    susu *player = nullptr;
-    if (susu_elem) {
-        player = static_cast<susu *>(susu_elem->entity);
+    Elements   *player_ele = get_current_player();
+    Damageable *player     = nullptr;
+    double px = 0.0, py = 0.0;
+
+    if (player_ele && player_ele->entity) {
+        player = reinterpret_cast<Damageable*>(player_ele->entity);
+        if (player->hitbox) {
+            px = player->hitbox->center_x();
+            py = player->hitbox->center_y();
+        }
     }
 
-    bool overlap_player;
-    do {
+    while (true) {
         p->x = std::rand() % (DataCenter::WIDTH  - p->width);
         p->y = std::rand() % (DataCenter::HEIGHT - p->height);
-        overlap_player = false;
-        if (player) {
-            overlap_player =
-                std::fabs(p->x - player->x) < ARRIVE_EPSILON &&
-                std::fabs(p->y - player->y) < ARRIVE_EPSILON;
-        }
-    } while (overlap_player);
+
+        if (!player || !player->hitbox) break;
+
+        float ex = p->x + p->width  * 0.5f;
+        float ey = p->y + p->height * 0.5f;
+
+        // 距離玩家中心夠遠就接受
+        float dx = ex - (float)px;
+        float dy = ey - (float)py;
+        float dist = std::sqrt(dx*dx + dy*dy);
+        if (dist >= ARRIVE_EPSILON) break;
+    }
 
     p->base.hitbox = New_Rectangle(
         p->x,
@@ -122,17 +133,20 @@ void capuccino_update(Elements *self)
     /* ===== 以下為正常行為 ===== */
     if (c->attack_timer > 0) c->attack_timer--;
 
-    Elements *susu_elem = get_susu();
-    if (!susu_elem) return;
-    susu *target = static_cast<susu *>(susu_elem->entity);
+    Elements *player_ele = get_current_player();
+    if (!player_ele || !player_ele->entity) return;
+
+    Damageable *target = reinterpret_cast<Damageable *>(player_ele->entity);
+    if (!target->hitbox) return;
 
     float cx = c->x + c->width  * 0.5f;
     float cy = c->y + c->height * 0.5f;
-    float tx = target->x + target->width  * 0.5f;
-    float ty = target->y + target->height * 0.5f;
+    float tx = (float)target->hitbox->center_x();
+    float ty = (float)target->hitbox->center_y();
     float dx = tx - cx;
     float dy = ty - cy;
     float dist = std::sqrt(dx * dx + dy * dy);
+
 
     /* 1) 追蹤移動 */
     if (dist > ARRIVE_EPSILON) {
