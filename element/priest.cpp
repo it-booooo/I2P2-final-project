@@ -95,12 +95,13 @@ Elements *New_priest(int label)
     Elements *pObj = New_Elements(label);
 
     // load priest images (GIF)  // ★ 路徑不動
-    char state_string[5][10] = {"stop_2", "move_2", "attack_2","combat_2","earth_2"};
+    //char state_string[5][10] = {"stop_2", "move_2", "attack_2","combat_2","earth_2"};
     for (int i = 0; i < 5; i++)
     {
-        char buffer[50];
-        std::sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        entity->gif_status[i] = algif_load_animation(buffer);
+        // char buffer[50];
+        // std::sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
+        // entity->gif_status[i] = algif_load_animation(buffer);
+        entity->img=ImageCenter::get_instance()->get("assets/image/priest.png");
     }
 
     // load effective sound  // ★ 路徑不動
@@ -356,12 +357,12 @@ void priest_destroy(Elements *self)
     priest *Obj = static_cast<priest *>(self->entity);
 
     // 銷毀全部 5 個 GIF
-    for (int i = 0; i < 5; i++) {
-        if (Obj->gif_status[i]) {
-            algif_destroy_animation(Obj->gif_status[i]);
-            Obj->gif_status[i] = nullptr;
-        }
-    }
+    // for (int i = 0; i < 5; i++) {
+    //     if (Obj->gif_status[i]) {
+    //         algif_destroy_animation(Obj->gif_status[i]);
+    //         Obj->gif_status[i] = nullptr;
+    //     }
+    // }
 
     if (Obj->base.hitbox) {
         delete Obj->base.hitbox;

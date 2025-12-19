@@ -29,6 +29,7 @@ public:
     int anime_time; // indicate how long the animation
     int e_timer,q_timer;
     bool new_proj;
+    ALLEGRO_BITMAP *img;
 };
 
 Elements *New_priest(int label);
