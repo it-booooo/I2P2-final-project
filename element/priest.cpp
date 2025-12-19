@@ -96,14 +96,16 @@ Elements *New_priest(int label)
 
     // load priest images (GIF)  // ★ 路徑不動
     //char state_string[5][10] = {"stop_2", "move_2", "attack_2","combat_2","earth_2"};
-    for (int i = 0; i < 5; i++)
-    {
-        // char buffer[50];
-        // std::sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        // entity->gif_status[i] = algif_load_animation(buffer);
-        entity->img=ImageCenter::get_instance()->get("assets/image/priest.png");
-    }
-
+    // for (int i = 0; i < 5; i++)
+    // {
+    //     // char buffer[50];
+    //     // std::sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
+    //     // entity->gif_status[i] = algif_load_animation(buffer);
+        
+    // }
+    entity->img=ImageCenter::get_instance()->get("assets/image/priest.png");
+    if(!entity->img)
+        std::fprintf(stderr, "[New_priest] Failed to load priest image\n");
     // load effective sound  // ★ 路徑不動
     ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");
     entity->atk_Sound = al_create_sample_instance(sample);
@@ -111,8 +113,9 @@ Elements *New_priest(int label)
     al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
     // initial the geometric information of priest
-    entity->width  = entity->gif_status[0]->width;
-    entity->height = entity->gif_status[0]->height;
+    entity->width  = al_get_bitmap_width(entity->img);
+    entity->height = al_get_bitmap_height(entity->img);
+    printf("priest width=%d, height=%d\n", entity->width, entity->height);
     entity->x = 300;
     entity->y = DataCenter::HEIGHT - entity->height - 60;
 
@@ -308,8 +311,7 @@ void priest_update(Elements *self)
     // ===================== EARTHQUAKE =====================
     else if (chara->state == EARTHQUAKE)
     {
-        if (chara->gif_status[EARTHQUAKE]->display_index == 4 &&
-            chara->new_proj == false &&
+        if (chara->new_proj == false &&
             chara->e_timer <= 0)
         {
             chara->e_timer = 60;
@@ -335,19 +337,35 @@ void priest_draw(Elements *self)
     priest *chara = ((priest *)(self->entity));
     DataCenter *DC = DataCenter::get_instance();
 
-    ALLEGRO_BITMAP *frame =
-        algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
+    // ALLEGRO_BITMAP *frame =
+    //     algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
 
-    if (frame)
-    {
-        al_draw_bitmap(
-            frame,
-            chara->x,
-            chara->y,
-            ((DC->mouse.x - (chara->x + chara->width*0.5f)) > 0)
-                ? ALLEGRO_FLIP_HORIZONTAL : 0
-        );
-    }
+    // if (frame)
+    // {
+    //     al_draw_bitmap(
+    //         chara->img,
+    //         chara->x,
+    //         chara->y,
+    //         ((DC->mouse.x - (chara->x + chara->width*0.5f)) > 0)
+    //             ? ALLEGRO_FLIP_HORIZONTAL : 0
+    //     );
+    // }
+    const float scale = 0.25f;
+
+    const float sw = al_get_bitmap_width(chara->img);
+    const float sh = al_get_bitmap_height(chara->img);
+    const float dw = sw * scale;
+    const float dh = sh * scale;
+
+    int flags = ((DC->mouse.x - (chara->x + dw * 0.5f)) > 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
+
+    al_draw_scaled_bitmap(
+        chara->img,
+        0, 0, sw, sh,          // 來源：整張圖
+        chara->x+150, chara->y,     // 目的地左上角
+        dw, dh,                 // 縮放後寬高
+        flags
+    );
 }
 
 void priest_destroy(Elements *self)

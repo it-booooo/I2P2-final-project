@@ -31,6 +31,7 @@ public:
     int anime_time;
     int e_timer, q_timer;
     bool new_proj;
+    ALLEGRO_BITMAP *img;
 
     // Q 技能吸血 buff 狀態
     bool lifesteal_active;

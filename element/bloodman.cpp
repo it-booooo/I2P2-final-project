@@ -44,21 +44,23 @@ Elements *New_Bloodman(int label)   // ★ 名稱改成 New_Bloodman，對應 he
     Bloodman *entity = new Bloodman{};
     Elements *pObj = New_Elements(label);
 
-    const char state_string[5][10] = {"stop_2", "move_2", "attack_2", "combat_2", "earth_2"};
-    for (int i = 0; i < 5; i++)
-    {
-        char buffer[50];
-        sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        entity->gif_status[i] = algif_load_animation(buffer);
-    }
-
+    // const char state_string[5][10] = {"stop_2", "move_2", "attack_2", "combat_2", "earth_2"};
+    // for (int i = 0; i < 5; i++)
+    // {
+    //     char buffer[50];
+    //     sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
+    //     entity->gif_status[i] = algif_load_animation(buffer);
+    // }
+    entity->img=ImageCenter::get_instance()->get("assets/image/bloodman.png");
+    if(!entity->img)
+        std::fprintf(stderr, "[New_Bloodman] Failed to load bloodman image\n");
     ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");
     entity->atk_Sound = al_create_sample_instance(sample);
     al_set_sample_instance_playmode(entity->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
     al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
-    entity->width  = entity->gif_status[0]->width;
-    entity->height = entity->gif_status[0]->height;
+    entity->width  = al_get_bitmap_width(entity->img);
+    entity->height = al_get_bitmap_height(entity->img);
     entity->x = 600; // 跟 susu 稍微分開
     entity->y = DataCenter::HEIGHT - entity->height - 60;
 
@@ -307,8 +309,7 @@ void bloodman_update(Elements *self)
     // ===================== COMBAT（近戰） =====================
     else if (chara->state == COMBAT)
     {
-        if (chara->gif_status[COMBAT]->display_index == 3 &&
-            !chara->new_proj)
+        if (!chara->new_proj)
         {
             float cx = chara->x + chara->width * 0.5f;
             float cy = chara->y + chara->height * 0.5f;
@@ -356,8 +357,7 @@ void bloodman_update(Elements *self)
     // ===================== EARTHQUAKE（現在變成 E 投擲物） =====================
     else if (chara->state == EARTHQUAKE)
     {
-        if (chara->gif_status[EARTHQUAKE]->display_index == 2 &&
-            !chara->new_proj &&
+        if (!chara->new_proj &&
             chara->e_timer <= 0)
         {
             chara->e_timer = 60;
@@ -396,17 +396,31 @@ void bloodman_draw(Elements *self)
     Bloodman *chara = (Bloodman *)(self->entity);
     DataCenter *DC = DataCenter::get_instance();
 
-    ALLEGRO_BITMAP *frame = algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
-    if (frame)
-    {
-        float cx = chara->x + chara->width * 0.5f;
-        int flags = (DC->mouse.x - cx > 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
-        al_draw_bitmap(frame, chara->x, chara->y, flags);
-    }
+    // ALLEGRO_BITMAP *frame = algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
+    // if (frame)
+    // {
+    //     float cx = chara->x + chara->width * 0.5f;
+    //     int flags = (DC->mouse.x - cx > 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
+    //     al_draw_bitmap(frame, chara->x, chara->y, flags);
+    // }
+    const float scale = 0.25f;
 
-    if (chara->atk_Sound && chara->gif_status[chara->state] &&
-        chara->state == ATK &&
-        chara->gif_status[chara->state]->display_index == 2)
+    const float sw = al_get_bitmap_width(chara->img);
+    const float sh = al_get_bitmap_height(chara->img);
+    const float dw = sw * scale;
+    const float dh = sh * scale;
+
+    int flags = ((DC->mouse.x - (chara->x + dw * 0.5f)) > 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
+
+    al_draw_scaled_bitmap(
+        chara->img,
+        0, 0, sw, sh,          // 來源：整張圖
+        chara->x+150, chara->y,     // 目的地左上角
+        dw, dh,                 // 縮放後寬高
+        flags
+    );
+
+    if (chara->atk_Sound && chara->state == ATK)
     {
         al_play_sample_instance(chara->atk_Sound);
     }
@@ -419,11 +433,11 @@ void bloodman_destroy(Elements *self)
 
     al_destroy_sample_instance(Obj->atk_Sound);
 
-    for (int i = 0; i < 5; i++)
-    {
-        if (Obj->gif_status[i])
-            algif_destroy_animation(Obj->gif_status[i]);
-    }
+    // for (int i = 0; i < 5; i++)
+    // {
+    //     if (Obj->gif_status[i])
+    //         algif_destroy_animation(Obj->gif_status[i]);
+    // }
 
     delete Obj->base.hitbox;
     Obj->base.hitbox = nullptr;
