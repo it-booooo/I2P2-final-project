@@ -45,7 +45,7 @@ Elements *New_crocodilo(int label)
     for (int i = 0; i < 3; ++i) {
         char buf[64];
         sprintf(buf, "assets/image/crocodilo_%s.png", state_s[i]);
-        pD->img[i] = al_load_bitmap(buf);
+        pD->img[i] = ImageCenter::get_instance()->get(buf);
     }
     pD->width  = al_get_bitmap_width (pD->img[0]);
     pD->height = al_get_bitmap_height(pD->img[0]);
@@ -207,8 +207,8 @@ void crocodilo_interact(Elements *self) { /* 目前 Crocodilo 不做互動 */ }
 void crocodilo_destory(Elements *self)
 {
     crocodilo *ch = static_cast<crocodilo *>(self->entity);
-    for (int i = 0; i < 3; ++i)
-        if (ch->img[i]) al_destroy_bitmap(ch->img[i]);
+    // for (int i = 0; i < 3; ++i)
+    //     if (ch->img[i]) al_destroy_bitmap(ch->img[i]);
     delete ch->base.hitbox;
     free(ch);
 }

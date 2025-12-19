@@ -2,83 +2,110 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
+
 #include "charater.h"
 #include "projectile.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../algif5/algif.h"
 #include "../scene/gamescene.h"
+#include "../data/DataCenter.h"
+
 #include <cstdio>
+
 /*
-   [Character function]
+   [Character function]  (C++ / susu-style)
 */
+
 Elements *New_Character(int label)
 {
-    Character *entity = (Character *)malloc(sizeof(Character));
+    Character *entity = new Character{};
     Elements *pObj = New_Elements(label);
-    // setting derived object member
-    // load character images
-    char state_string[3][10] = {"stop", "move", "attack"};
+
+    // load character GIF via GIFCenter
+    const char *state_string[3] = {"stop", "move", "attack"};
     for (int i = 0; i < 3; i++)
     {
-        char buffer[50];
-        sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
-        entity->gif_status[i] = algif_load_animation(buffer);
+        char path[64];
+        std::snprintf(path, sizeof(path), "assets/image/chara_%s.gif", state_string[i]);
+        entity->gif_status[i] = GIFCenter::get_instance()->get(path);
     }
-    // load effective sound
-    ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");
-    entity->atk_Sound = al_create_sample_instance(sample);
-    al_set_sample_instance_playmode(entity->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
-    al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
-    // initial the geometric information of character
-    entity->width = entity->gif_status[0]->width;
+    entity->width  = entity->gif_status[0]->width;
     entity->height = entity->gif_status[0]->height;
     entity->x = 300;
     entity->y = DataCenter::HEIGHT - entity->height - 60;
-    entity->hitbox = New_Rectangle(entity->x,
-                                   entity->y,
-                                   entity->x + entity->width,
-                                   entity->y + entity->height);
-    entity->dir = false; // true: face to right, false: face to left
-    // initial the animation component
-    entity->state = STOP;
-    entity->new_proj = false;
-    pObj->entity = entity;
-    // setting derived object function
-    pObj->Draw = Character_draw;
-    pObj->Update = Character_update;
+
+    entity->hitbox = New_Rectangle(
+        entity->x,
+        entity->y,
+        entity->x + entity->width,
+        entity->y + entity->height
+    );
+
+    entity->dir = 0;
+
+    entity->state      = STOP;
+    entity->new_proj   = false;
+    entity->anime      = 0;
+    entity->anime_time = 0;
+    entity->atk_sound_played = false;
+
+    pObj->entity   = entity;
+    pObj->Draw     = Character_draw;
+    pObj->Update   = Character_update;
     pObj->Interact = Character_interact;
-    pObj->Destroy = Character_destory;
+    pObj->Destroy  = Character_destroy;
+
     return pObj;
 }
+
 void Character_update(Elements *self)
 {
-    /*// use the idea of finite state machine to deal with different state
-    Character *chara = ((Character *)(self->entity));
+    Character *chara = static_cast<Character *>(self->entity);
+    if (!chara) return;
+
+    DataCenter *DC = DataCenter::get_instance();
+    const int move_dis = 5;
+
+    // ===== susu-style animation timer =====
+    if (chara->anime_time > 0) {
+        chara->anime++;
+        if (chara->anime >= chara->anime_time) {
+            chara->state      = STOP;
+            chara->anime      = 0;
+            chara->anime_time = 0;
+            chara->new_proj   = false;
+            chara->atk_sound_played = false;
+        }
+    }
+
     if (chara->state == STOP)
     {
-        if (key_state[ALLEGRO_KEY_SPACE])
+        if (DC->key_state[ALLEGRO_KEY_SPACE])
         {
             chara->state = ATK;
+            chara->anime = 0;
+            chara->anime_time = 20;
+            chara->new_proj = false;
+            chara->atk_sound_played = false;
         }
-        else if (key_state[ALLEGRO_KEY_A])
+        else if (DC->key_state[ALLEGRO_KEY_A])
         {
             chara->dir = 0;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_D])
+        else if (DC->key_state[ALLEGRO_KEY_D])
         {
             chara->dir = 1;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_W])
+        else if (DC->key_state[ALLEGRO_KEY_W])
         {
             chara->dir = 2;
             chara->state = MOVE;
         }
-        else if (key_state[ALLEGRO_KEY_S])
+        else if (DC->key_state[ALLEGRO_KEY_S])
         {
             chara->dir = 3;
             chara->state = MOVE;
@@ -90,100 +117,125 @@ void Character_update(Elements *self)
     }
     else if (chara->state == MOVE)
     {
-        if (key_state[ALLEGRO_KEY_SPACE])
+        if (DC->key_state[ALLEGRO_KEY_SPACE])
         {
             chara->state = ATK;
+            chara->anime = 0;
+            chara->anime_time = 20;
+            chara->new_proj = false;
+            chara->atk_sound_played = false;
         }
-        else if (key_state[ALLEGRO_KEY_A])
+        else if (DC->key_state[ALLEGRO_KEY_A])
         {
             chara->dir = 0;
-            _Character_update_position(self, -5, 0);
-            chara->state = MOVE;
+            _Character_update_position(self, -move_dis, 0);
         }
-        else if (key_state[ALLEGRO_KEY_D])
+        else if (DC->key_state[ALLEGRO_KEY_D])
         {
             chara->dir = 1;
-            _Character_update_position(self, 5, 0);
-            chara->state = MOVE;
+            _Character_update_position(self, move_dis, 0);
         }
-        else if (key_state[ALLEGRO_KEY_W])
+        else if (DC->key_state[ALLEGRO_KEY_W])
         {
             chara->dir = 2;
-            _Character_update_position(self, 0, -5);
-            chara->state = MOVE;
+            _Character_update_position(self, 0, -move_dis);
         }
-        else if (key_state[ALLEGRO_KEY_S])
+        else if (DC->key_state[ALLEGRO_KEY_S])
         {
             chara->dir = 3;
-            _Character_update_position(self, 0, 5);
-            chara->state = MOVE;
+            _Character_update_position(self, 0, move_dis);
         }
-        if (chara->gif_status[chara->state]->done)
+        else
+        {
             chara->state = STOP;
+        }
     }
     else if (chara->state == ATK)
     {
-        if (chara->gif_status[chara->state]->done)
+        if (chara->gif_status[ATK] &&
+            chara->gif_status[ATK]->display_index == 2 &&
+            chara->new_proj == false)
         {
-            chara->state = STOP;
-            chara->new_proj = false;
-        }
-        if (chara->gif_status[ATK]->display_index == 2 && chara->new_proj == false)
-        {
-            Elements *pro;
-            if (chara->dir)
-            {
+            Elements *pro = nullptr;
+            if (chara->dir) {
                 pro = New_Projectile(Projectile_L,
-                                     chara->x + chara->width - 100,
-                                     chara->y + 10,
+                                     static_cast<int>(chara->x + chara->width - 100),
+                                     static_cast<int>(chara->y + 10),
                                      5);
-            }
-            else
-            {
+            } else {
                 pro = New_Projectile(Projectile_L,
-                                     chara->x - 50,
-                                     chara->y + 10,
+                                     static_cast<int>(chara->x - 50),
+                                     static_cast<int>(chara->y + 10),
                                      -5);
             }
-            sceneManager.RegisterElement(pro);
+            if (pro) sceneManager.RegisterElement(pro);
             chara->new_proj = true;
         }
-    }*/
+
+        // sound once at frame 2
+        if (!chara->atk_sound_played &&
+            chara->gif_status[ATK] &&
+            chara->gif_status[ATK]->display_index == 2)
+        {
+            SoundCenter::get_instance()->play("assets/sound/atk_sound.wav",
+                                              ALLEGRO_PLAYMODE_ONCE);
+            chara->atk_sound_played = true;
+        }
+    }
 }
+
 void Character_draw(Elements *self)
 {
-    // with the state, draw corresponding image
-    Character *chara = ((Character *)(self->entity));
-    ALLEGRO_BITMAP *frame = algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
-    if (frame)
-    {
-        al_draw_bitmap(frame, chara->x, chara->y, ((chara->dir) ? ALLEGRO_FLIP_HORIZONTAL : 0));
-    }
-    if (chara->state == ATK && chara->gif_status[chara->state]->display_index == 2)
-    {
-        al_play_sample_instance(chara->atk_Sound);
+    Character *chara = static_cast<Character *>(self->entity);
+    if (!chara) return;
+
+    ALLEGRO_BITMAP *frame =
+        algif_get_bitmap(chara->gif_status[chara->state], al_get_time());
+
+    if (frame) {
+        al_draw_bitmap(frame, chara->x, chara->y,
+                       (chara->dir ? ALLEGRO_FLIP_HORIZONTAL : 0));
     }
 }
-void Character_destory(Elements *self)
+
+void Character_destroy(Elements *self)
 {
-    Character *Obj = ((Character *)(self->entity));
-    al_destroy_sample_instance(Obj->atk_Sound);
-    for (int i = 0; i < 3; i++)
-        algif_destroy_animation(Obj->gif_status[i]);
-    delete Obj->hitbox;
-    free(Obj);
+    if (!self || !self->entity) return;
+
+    Character *Obj = static_cast<Character *>(self->entity);
+
+    // GIF 由 GIFCenter 管理：不要在這裡 destroy
+    for (int i = 0; i < 3; ++i) {
+        Obj->gif_status[i] = nullptr;
+    }
+
+    if (Obj->hitbox) {
+        delete Obj->hitbox;
+        Obj->hitbox = nullptr;
+    }
+
+    delete Obj;
+    self->entity = nullptr;
 }
 
 void _Character_update_position(Elements *self, int dx, int dy)
 {
-    Character *chara = ((Character *)(self->entity));
+    Character *chara = static_cast<Character *>(self->entity);
+    if (!chara) return;
+
     chara->x += dx;
     chara->y += dy;
+
     Shape *hitbox = chara->hitbox;
+    if (!hitbox) return;
+
     const double cx = hitbox->center_x();
     const double cy = hitbox->center_y();
     hitbox->update_center_x(cx + dx);
     hitbox->update_center_y(cy + dy);
 }
 
-void Character_interact(Elements *self) {}
+void Character_interact(Elements *self)
+{
+    (void)self;
+}

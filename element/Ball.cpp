@@ -3,63 +3,67 @@
 #include "charater.h"
 #include "../shapes/Circle.h"
 #include "../shapes/ShapeFactory.h"
-#include "../scene/gamescene.h" // for element label
-#include "../scene/sceneManager.h" // for scene variable
+#include "../scene/sceneManager.h"
 #include "../data/DataCenter.h"
-#include "allegro5/allegro_ttf.h"
-#include "allegro5/allegro_primitives.h"
+#include <allegro5/allegro_primitives.h>
+
 /*
    [Ball function]
 */
+
+// forward declaration（避免 _Ball_update_position 未宣告）
+static void _Ball_update_position(Elements *self, int dx, int dy);
+
 Elements *New_Ball(int label)
 {
-    Ball *entity = static_cast<Ball *>(malloc(sizeof(Ball)));
+    Ball *entity = new Ball{};
     Elements *pObj = New_Elements(label);
-    Elements &wrapper = *pObj;
-    Ball &obj = *entity;
+
     DataCenter *DC = DataCenter::get_instance();
 
-    obj.x = DC->mouse.x;
-    obj.y = DC->mouse.y;
-    obj.r = 10;
-    obj.color = al_map_rgb(255 ,0, 0);
-    obj.hitbox = New_Circle(obj.x,
-                             obj.y,
-                             obj.r);
+    entity->x = DC->mouse.x;
+    entity->y = DC->mouse.y;
+    entity->r = 10;
+    entity->color = al_map_rgb(255, 0, 0);
+    entity->hitbox = New_Circle(entity->x, entity->y, entity->r);
 
-    wrapper.inter_obj[wrapper.inter_len++] = Character_L;
-    wrapper.inter_obj[wrapper.inter_len++] = Tree_L;
+    // 可互動目標
+    pObj->inter_obj[pObj->inter_len++] = Character_L;
+    pObj->inter_obj[pObj->inter_len++] = Tree_L;
 
-    wrapper.entity = entity;
-    wrapper.Update = Ball_update;
-    wrapper.Interact = Ball_interact;
-    wrapper.Draw = Ball_draw;
-    wrapper.Destroy = Ball_destory;
+    pObj->entity   = entity;
+    pObj->Update   = Ball_update;
+    pObj->Interact = Ball_interact;
+    pObj->Draw     = Ball_draw;
+    pObj->Destroy  = Ball_destroy;
 
     return pObj;
 }
+
 void Ball_update(Elements *self)
 {
-    Elements &wrapper = *self;
-    Ball &Obj = *static_cast<Ball *>(wrapper.entity);
-    Shape *hitbox = Obj.hitbox;
+    Ball *b = static_cast<Ball *>(self->entity);
+    if (!b) return;
+
     DataCenter *DC = DataCenter::get_instance();
-    if (hitbox) {
-        const double cx = hitbox->center_x();
-        const double cy = hitbox->center_y();
-        hitbox->update_center_x(cx + DC->mouse.x - Obj.x);
-        hitbox->update_center_y(cy + DC->mouse.y - Obj.y);
-    }
-    Obj.x = DC->mouse.x;
-    Obj.y = DC->mouse.y;
+
+    const int new_x = DC->mouse.x;
+    const int new_y = DC->mouse.y;
+    const int dx = new_x - b->x;
+    const int dy = new_y - b->y;
+
+    _Ball_update_position(self, dx, dy);
 }
-void _Ball_update_position(Elements *self, int dx, int dy)
+
+static void _Ball_update_position(Elements *self, int dx, int dy)
 {
-    Elements &wrapper = *self;
-    Ball &Obj = *static_cast<Ball *>(wrapper.entity);
-    Obj.x += dx;
-    Obj.y += dy;
-    Shape *hitbox = Obj.hitbox;
+    Ball *b = static_cast<Ball *>(self->entity);
+    if (!b) return;
+
+    b->x += dx;
+    b->y += dy;
+
+    Shape *hitbox = b->hitbox;
     if (!hitbox) return;
 
     const double cx = hitbox->center_x();
@@ -67,71 +71,70 @@ void _Ball_update_position(Elements *self, int dx, int dy)
     hitbox->update_center_x(cx + dx);
     hitbox->update_center_y(cy + dy);
 }
+
 void Ball_interact(Elements *self)
 {
-    Elements &wrapper = *self;
-    Ball &Obj = *static_cast<Ball *>(wrapper.entity);
-    for (int j = 0; j < wrapper.inter_len; j++)
-    {
-        ElementVec labelEle = sceneManager.GetLabelElements(Character_L);
-        Character *Obj1 = NULL;
-        if (labelEle.len > 0 && labelEle.arr[0]) {
-            Elements &chara_wrapper = *labelEle.arr[0];
-            Obj1 = static_cast<Character *>(chara_wrapper.entity);
-        }
-        labelEle = sceneManager.GetLabelElements(Tree_L);
-        Tree *Obj2 = NULL;
-        if (labelEle.len > 0 && labelEle.arr[0]) {
-            Elements &tree_wrapper = *labelEle.arr[0];
-            Obj2 = reinterpret_cast<Tree *>(tree_wrapper.entity);
-        }
+    Ball *b = static_cast<Ball *>(self->entity);
+    if (!b) return;
 
-        Shape *chara_hitbox = NULL;
-        if (Obj1) {
-            Character &chara = *Obj1;
-            chara_hitbox = chara.hitbox;
+    // 預設紅色
+    b->color = al_map_rgb(255, 0, 0);
+    if (!b->hitbox) return;
+
+    // 取得 Character（若場上可能多隻，你就改成遍歷 vec.arr）
+    Character *chara = nullptr;
+    {
+        ElementVec vec = sceneManager.GetLabelElements(Character_L);
+        if (vec.len > 0 && vec.arr[0] && vec.arr[0]->entity) {
+            chara = static_cast<Character *>(vec.arr[0]->entity);
         }
-        if(Obj.hitbox && chara_hitbox)
-        {
-            Shape &ball_hitbox = *Obj.hitbox;
-            if (ball_hitbox.overlap(*chara_hitbox)) {
-                Obj.color = al_map_rgb(0,255,0);
-            }
+    }
+
+    // 取得 Tree
+    Tree *tree = nullptr;
+    {
+        ElementVec vec = sceneManager.GetLabelElements(Tree_L);
+        if (vec.len > 0 && vec.arr[0] && vec.arr[0]->entity) {
+            tree = static_cast<Tree *>(vec.arr[0]->entity);
         }
-        Shape *tree_hitbox = NULL;
-        if (Obj2) {
-            Tree &tree = *Obj2;
-            tree_hitbox = tree.base.hitbox;
+    }
+
+    // 角色 -> 綠
+    if (chara && chara->hitbox) {
+        if (b->hitbox->overlap(*chara->hitbox)) {
+            b->color = al_map_rgb(0, 255, 0);
         }
-        else if(Obj.hitbox && tree_hitbox)
-        {
-            Shape &ball_hitbox = *Obj.hitbox;
-            if (ball_hitbox.overlap(*tree_hitbox)) {
-                Obj.color = al_map_rgb(0,0,255);
-            }
-        }
-        else
-        {
-            Obj.color = al_map_rgb(255,0,0);
+    }
+
+    // 樹 -> 藍（覆蓋優先）
+    if (tree && tree->base.hitbox) {
+        if (b->hitbox->overlap(*tree->base.hitbox)) {
+            b->color = al_map_rgb(0, 0, 255);
         }
     }
 }
-void _Ball_interact_Floor(Elements *self, Elements *tar)
-{
-}
-void _Ball_interact_Tree(Elements *self, Elements *tar)
-{
-}
+
 void Ball_draw(Elements *self)
 {
-    Elements &wrapper = *self;
-    Ball &Obj = *static_cast<Ball *>(wrapper.entity);
-    al_draw_circle(Obj.x,Obj.y,Obj.r,Obj.color,10);
+    Ball *b = static_cast<Ball *>(self->entity);
+    if (!b) return;
+
+    al_draw_circle(b->x, b->y, b->r, b->color, 10);
 }
-void Ball_destory(Elements *self)
+
+void Ball_destroy(Elements *self)
 {
-    Elements &wrapper = *self;
-    Ball &Obj = *static_cast<Ball *>(wrapper.entity);
-    delete Obj.hitbox;
-    free(wrapper.entity);
+    if (!self || !self->entity) return;
+
+    Ball *b = static_cast<Ball *>(self->entity);
+
+    if (b->hitbox) {
+        delete b->hitbox;
+        b->hitbox = nullptr;
+    }
+
+    delete b;
+    self->entity = nullptr;
+
+    // 不要 delete/free self，交給 Scene / SceneManager 管
 }
