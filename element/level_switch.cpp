@@ -6,6 +6,7 @@
 #include "allegro5/allegro_primitives.h"
 #include "susu.h"
 #include "../data/FontCenter.h"
+#include "bloodman.h"  
 #include <cstdio>
 
 int level_no;
@@ -86,6 +87,14 @@ void Level_switch_DrawOverlay(void)
             chara.base.hp = chara.base.full_hp;
             chara.damage += 10;
         }
+        Elements *blood_elem = get_bloodman();
+        if (blood_elem && blood_elem->entity)
+        {
+            Bloodman *chara = static_cast<Bloodman *>(blood_elem->entity);
+            chara->base.hp = chara->base.full_hp;
+            chara->damage += 10;
+        }
+
         level_up =1;
     }
     

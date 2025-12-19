@@ -41,6 +41,7 @@ Elements *New_Combat(int label,
 
     wrapper.inter_obj[wrapper.inter_len++] = tungtungtung_L;
     wrapper.inter_obj[wrapper.inter_len++] = Susu_L;
+    wrapper.inter_obj[wrapper.inter_len++] = Bloodman_L;   // ★ 新增：讓攻擊可以打到腳色2
     wrapper.inter_obj[wrapper.inter_len++] = trippi_troppi_L;
     wrapper.inter_obj[wrapper.inter_len++] = capuccino_L;
     wrapper.inter_obj[wrapper.inter_len++] = bananini_L;

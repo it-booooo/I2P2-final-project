@@ -7,6 +7,9 @@
 #include "../algif5/algif.h"
 #include "state.h"
 
+// 全域目前操控的是哪一個角色：1 = susu, 2 = bloodman
+extern int gControlledCharacter;
+
 /*
    [susu object]
 */
@@ -33,6 +36,7 @@ public:
     int e_timer,q_timer;
     bool new_proj;
     //Shape *hitbox; // the hitbox of object
+
 };
 Elements *New_susu(int label);
 void susu_update(Elements *self);
@@ -41,5 +45,11 @@ void susu_draw(Elements *self);
 void susu_destroy(Elements *self);
 void _susu_update_position(Elements *self, int dx, int dy);
 Elements * get_susu(void);
+Elements *get_current_player(void);
+Elements *get_bloodman(void);
+
+
+// ★ 新增：切換時同步位置
+void SyncCharactersOnSwitch(int newChar);
 
 #endif

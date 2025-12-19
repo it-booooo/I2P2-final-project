@@ -1,7 +1,8 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_image.h>
 #include "tungtungtung.h"
-#include "susu.h"              /* 提供 get_susu() 介面 */
+#include "susu.h"              /* 提供 get_susu(), get_current_player() 介面 */
+#include "damageable.h"        /* ★ 新增：使用 Damageable 取得 hitbox 中心 */
 #include "combat.h"            /* 近戰攻擊矩形 */
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h" /* sceneManager.RegisterElement & Combat_L */
@@ -19,7 +20,7 @@
 #define ARRIVE_EPSILON         60.0f  /* 抵達判定半徑 */
 #define ATTACK_DISTANCE        150.0f /* 自動攻擊距離 */
 #define ATTACK_COOLDOWN_FRAMES 120    /* 2 秒冷卻 (60 FPS * 2) */
-#define TUNG_ATTACK_DAMAGE    30     /* ← 在這裡調整攻擊力 */
+#define TUNG_ATTACK_DAMAGE     30     /* ← 在這裡調整攻擊力 */
 
 /* --------------------------------------------------
    建構函式
@@ -27,7 +28,7 @@
 Elements *New_tungtungtung(int label)
 {
     tungtungtung *entity = static_cast<tungtungtung *>(malloc(sizeof(tungtungtung)));
-    Elements     *pObj        = New_Elements(label);
+    Elements     *pObj   = New_Elements(label);
 
     /* 載入靜態貼圖 */
     const char *state_string[3] = {"stop", "move", "atk"};
@@ -44,20 +45,35 @@ Elements *New_tungtungtung(int label)
     entity->y = DataCenter::HEIGHT - entity->height - 60;
     entity->base.hp   = 50;
     entity->base.side = 1;          /* 敵方陣營 */
-    
 
     /* 個別冷卻計時器初始化 */
     entity->attack_timer = 0;
 
-    /* 避開出生點太靠近玩家 */
-    Elements *susu_elem = get_susu();
-    susu *player = NULL;
-    if (susu_elem) player = (susu *)susu_elem->entity;
+    /* ★ 避開出生點太靠近「目前玩家」（不再只看 susu） */
+    Elements   *player_ele = get_current_player();
+    Damageable *player     = nullptr;
+    double      px = 0.0, py = 0.0;
+
+    if (player_ele && player_ele->entity) {
+        player = reinterpret_cast<Damageable *>(player_ele->entity);
+        if (player->hitbox) {
+            px = player->hitbox->center_x();
+            py = player->hitbox->center_y();
+        }
+    }
+
     do {
         entity->x = rand() % (DataCenter::WIDTH  - entity->width);
         entity->y = rand() % (DataCenter::HEIGHT - entity->height);
-    } while (player && fabs(entity->x - player->x) < ARRIVE_EPSILON &&
-                       fabs(entity->y - player->y) < ARRIVE_EPSILON);
+
+        if (!player || !player->hitbox) break;
+
+        float ex = entity->x + entity->width  * 0.5f;
+        float ey = entity->y + entity->height * 0.5f;
+        if (fabs(ex - px) >= ARRIVE_EPSILON || fabs(ey - py) >= ARRIVE_EPSILON)
+            break;
+
+    } while (true);
 
     /* 依最終座標建立 hitbox */
     entity->base.hitbox = New_Rectangle(entity->x,
@@ -69,17 +85,17 @@ Elements *New_tungtungtung(int label)
     entity->state = STOP;
 
     /* 綁定多型函式 */
-    pObj->entity = entity;
-    pObj->Draw        = tungtungtung_draw;
-    pObj->Update      = tungtungtung_update;
-    pObj->Interact    = tungtungtung_interact;
-    pObj->Destroy     = tungtungtung_destory;
+    pObj->entity   = entity;
+    pObj->Draw     = tungtungtung_draw;
+    pObj->Update   = tungtungtung_update;
+    pObj->Interact = tungtungtung_interact;
+    pObj->Destroy  = tungtungtung_destory;
 
     return pObj;
 }
 
 /* --------------------------------------------------
-   每幀更新：固定速率追蹤 susu，近距離自動攻擊
+   每幀更新：固定速率追蹤目前玩家，近距離自動攻擊
    --------------------------------------------------*/
 void tungtungtung_update(Elements *self)
 {
@@ -88,17 +104,18 @@ void tungtungtung_update(Elements *self)
     /* 攻擊冷卻倒數 */
     if (chara->attack_timer > 0) chara->attack_timer--;
 
-    /* 透過單例 accessor 取得 susu */
-    Elements *susu_elem = get_susu();
-    if (!susu_elem) return;              /* 還沒生成 susu */
+    /* ★ 透過共用介面取得「目前玩家」（可能是 susu 或 bloodman） */
+    Elements *player_ele = get_current_player();
+    if (!player_ele || !player_ele->entity) return;
 
-    susu *target = static_cast<susu *>(susu_elem->entity);
+    Damageable *target = reinterpret_cast<Damageable *>(player_ele->entity);
+    if (!target->hitbox) return;
 
     /* 1) 取得雙方中心點 */
     float cx = chara->x + chara->width  * 0.5f;
     float cy = chara->y + chara->height * 0.5f;
-    float tx = target->x + target->width  * 0.5f;
-    float ty = target->y + target->height * 0.5f;
+    float tx = static_cast<float>(target->hitbox->center_x());
+    float ty = static_cast<float>(target->hitbox->center_y());
 
     float dx = tx - cx;
     float dy = ty - cy;
@@ -158,7 +175,7 @@ void tungtungtung_update(Elements *self)
         }
 
         /* 產生攻擊元素 */
-                Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2, TUNG_ATTACK_DAMAGE, chara->base.side);
+        Elements *atk = New_Combat(Combat_L, x1, y1, x2, y2, TUNG_ATTACK_DAMAGE, chara->base.side);
         if (atk) sceneManager.RegisterElement(atk);
 
         chara->state        = ATK;
@@ -219,10 +236,10 @@ void _tungtungtung_update_position(Elements *self, int dx, int dy)
     chara->y += dy;
 
     /* 邊界檢查 */
-    if (chara->x < 0)                       chara->x = 0;
-    if (chara->y < 0)                       chara->y = 0;
-    if (chara->x > DataCenter::WIDTH  - chara->width)   chara->x = DataCenter::WIDTH  - chara->width;
-    if (chara->y > DataCenter::HEIGHT - chara->height)  chara->y = DataCenter::HEIGHT - chara->height;
+    if (chara->x < 0)                                      chara->x = 0;
+    if (chara->y < 0)                                      chara->y = 0;
+    if (chara->x > DataCenter::WIDTH  - chara->width)      chara->x = DataCenter::WIDTH  - chara->width;
+    if (chara->y > DataCenter::HEIGHT - chara->height)     chara->y = DataCenter::HEIGHT - chara->height;
 
     /* hitbox 同步 */
     Shape *hb = chara->base.hitbox;

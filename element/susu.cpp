@@ -1,12 +1,17 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_native_dialog.h>
+#include <cstdio>
+#include <cmath>
 #include "susu.h"
 #include "hpbar.h"
 #include "projectile.h"
 #include "atk.h"
 #include "combat.h"
 #include "earthquake.h"
+#include "bloodman.h"          // ★ 新增：需要 Bloodman 型別 + get_bloodman()
+#include "priest.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -15,19 +20,181 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <cstdio>
 #include <cmath>
+#include "../data/DataCenter.h"
 
 #define M_PI 3.14159265358979323846
+
 
 /*
    [susu function]
 */
 
-static Elements *singleton_susu = NULL;
+int gControlledCharacter = 1;   // ★ 一開始控制角色1
 
-Elements *get_susu(void)
+// ★ 目前操作中的玩家（給血條、怪物用）
+Elements *get_current_player(void)
+{
+    if (gControlledCharacter == 1)
+        return get_susu();
+    else if (gControlledCharacter == 2)
+        return get_bloodman();
+    else if (gControlledCharacter == 3)
+        return get_priest();
+    return nullptr;
+}
+
+static Elements *singleton_susu = NULL; // CHANGED: added singleton pointer to expose susu to other modules
+
+Elements *get_susu(void) // CHANGED: accessor to retrieve the singleton pointer
 {
     return singleton_susu;
 }
+
+// ★ 切換角色時，同步兩個角色的位置＋hitbox
+// ★ 切換角色時，同步兩個角色的位置＋hitbox
+void SyncCharactersOnSwitch(int newChar)
+{
+    Elements *s_ele = get_susu();
+    Elements *b_ele = get_bloodman();
+    Elements *p_ele = get_priest();          // ★ 新增：第三位角色 牧師
+
+    // ★ 只要「目標角色」或「目前角色」沒有生成，就只改控制權（避免 crash）
+    if (newChar == 1)
+    {
+        if (!s_ele || !s_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (newChar == 2)
+    {
+        if (!b_ele || !b_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (newChar == 3)
+    {
+        if (!p_ele || !p_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+
+    // ★ 目前操控角色也必須存在，否則也只改控制權
+    if (gControlledCharacter == 1)
+    {
+        if (!s_ele || !s_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (gControlledCharacter == 2)
+    {
+        if (!b_ele || !b_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+    else if (gControlledCharacter == 3)
+    {
+        if (!p_ele || !p_ele->entity)
+        {
+            gControlledCharacter = newChar;
+            return;
+        }
+    }
+
+    susu     *s  = (s_ele && s_ele->entity) ? static_cast<susu    *>(s_ele->entity) : nullptr;
+    Bloodman *bm = (b_ele && b_ele->entity) ? static_cast<Bloodman*>(b_ele->entity) : nullptr;
+    priest   *pr = (p_ele && p_ele->entity) ? static_cast<priest  *>(p_ele->entity) : nullptr;
+
+    // ★ 同角色切換就不用做事
+    if (gControlledCharacter == newChar)
+        return;
+
+    // ------------------------------------------------------------
+    // ★ 核心：把「目前角色」的位置 / hitbox center，複製到「新角色」
+    // ------------------------------------------------------------
+    int from_x = 0, from_y = 0;
+    Shape *from_hitbox = nullptr;
+
+    if (gControlledCharacter == 1 && s)
+    {
+        from_x = s->x;
+        from_y = s->y;
+        from_hitbox = s->base.hitbox;
+    }
+    else if (gControlledCharacter == 2 && bm)
+    {
+        from_x = bm->x;
+        from_y = bm->y;
+        from_hitbox = bm->base.hitbox;
+    }
+    else if (gControlledCharacter == 3 && pr)
+    {
+        from_x = pr->x;
+        from_y = pr->y;
+        from_hitbox = pr->base.hitbox;
+    }
+    else
+    {
+        // 理論上不會到這，但保險
+        gControlledCharacter = newChar;
+        return;
+    }
+
+    if (newChar == 1 && s)
+    {
+        // ★ 新角色 = susu，繼承目前角色的位置
+        s->x = from_x;
+        s->y = from_y;
+
+        if (from_hitbox && s->base.hitbox)
+        {
+            double cx = from_hitbox->center_x();
+            double cy = from_hitbox->center_y();
+            s->base.hitbox->update_center_x(cx);
+            s->base.hitbox->update_center_y(cy);
+        }
+    }
+    else if (newChar == 2 && bm)
+    {
+        // ★ 新角色 = bloodman，繼承目前角色的位置
+        bm->x = from_x;
+        bm->y = from_y;
+
+        if (from_hitbox && bm->base.hitbox)
+        {
+            double cx = from_hitbox->center_x();
+            double cy = from_hitbox->center_y();
+            bm->base.hitbox->update_center_x(cx);
+            bm->base.hitbox->update_center_y(cy);
+        }
+    }
+    else if (newChar == 3 && pr)
+    {
+        // ★ 新角色 = priest，繼承目前角色的位置
+        pr->x = from_x;
+        pr->y = from_y;
+
+        if (from_hitbox && pr->base.hitbox)
+        {
+            double cx = from_hitbox->center_x();
+            double cy = from_hitbox->center_y();
+            pr->base.hitbox->update_center_x(cx);
+            pr->base.hitbox->update_center_y(cy);
+        }
+    }
+
+    gControlledCharacter = newChar;
+}
+
 
 Elements *New_susu(int label)
 {
@@ -43,9 +210,12 @@ Elements *New_susu(int label)
         std::sprintf(buffer, "assets/image/chara_%s.gif", state_string[i]);
         entity->gif_status[i] = algif_load_animation(buffer);
     }
-
-    //  atk 音效改用 SoundCenter，不再在這裡建立 sample instance
-    // （保留成員 atk_Sound 也沒關係，但不再使用）
+    //entity->img = al_load_bitmap("assets/image/susu_1.png");
+    // load effective sound
+    ALLEGRO_SAMPLE *sample = al_load_sample("assets/sound/atk_sound.wav");
+    entity->atk_Sound = al_create_sample_instance(sample);
+    al_set_sample_instance_playmode(entity->atk_Sound, ALLEGRO_PLAYMODE_ONCE);
+    al_attach_sample_instance_to_mixer(entity->atk_Sound, al_get_default_mixer());
 
     // initial the geometric information of susu
     entity->width  = entity->gif_status[0]->width;
@@ -64,16 +234,17 @@ Elements *New_susu(int label)
     entity->damage = 80;
 
     // initial the animation component
-    entity->state      = STOP;
-    entity->new_proj   = false;
-    entity->e_timer    = 0;
-    entity->q_timer    = 0;
+    entity->state = STOP;
+    entity->new_proj = false;
+    entity->e_timer = 0;
+    entity->q_timer = 0;
     entity->anime      = 0;
     entity->anime_time = 0;
 
-    pObj->entity   = entity;
-    pObj->Draw     = susu_draw;
-    pObj->Update   = susu_update;
+    pObj->entity = entity;
+    // setting derived object function
+    pObj->Draw = susu_draw;
+    pObj->Update = susu_update;
     pObj->Interact = susu_interact;
     pObj->Destroy  = susu_destroy;
 
@@ -95,6 +266,34 @@ void susu_update(Elements *self)
     ALLEGRO_MOUSE_STATE state;
     al_get_mouse_state(&state);
     DataCenter *DC = DataCenter::get_instance();
+
+    ALLEGRO_MOUSE_STATE mstate;
+    al_get_mouse_state(&mstate);
+
+    // ★ 角色切換：只在「按下瞬間」觸發，並同步位置
+    bool press1 = DC->key_state[ALLEGRO_KEY_1] && !DC->prev_key_state[ALLEGRO_KEY_1];
+    bool press2 = DC->key_state[ALLEGRO_KEY_2] && !DC->prev_key_state[ALLEGRO_KEY_2];
+    bool press3 = DC->key_state[ALLEGRO_KEY_3] && !DC->prev_key_state[ALLEGRO_KEY_3];
+
+    if (press1 && gControlledCharacter != 1)
+    {
+        SyncCharactersOnSwitch(1);   // 切回角色1（susu），繼承角色2的位置
+    }
+    else if (press2 && gControlledCharacter != 2)
+    {
+        SyncCharactersOnSwitch(2);   // 切到角色2（bloodman），繼承角色1的位置
+    }
+    else if (press3 && gControlledCharacter != 3)
+    {
+        SyncCharactersOnSwitch(3);   // 切到角色3（牧師）
+    }
+
+    // ★ 不在操控角色時，不吃輸入
+    if (gControlledCharacter != 1)
+    {
+        chara->state = STOP;   // 或者乾脆什麼都不改
+        return;
+    }
 
     if (DC->key_state[ALLEGRO_KEY_SPACE] == 0)
         space = 0;
@@ -358,7 +557,12 @@ void susu_update(Elements *self)
 
 void susu_draw(Elements *self)
 {
-    susu *chara = static_cast<susu *>(self->entity);
+    // ★ 非操作中的角色不畫出來（數值仍保留）
+    if (gControlledCharacter != 1)
+        return;
+
+    // with the state, draw corresponding image
+    susu *chara = ((susu *)(self->entity));
     DataCenter *DC = DataCenter::get_instance();
 
     ALLEGRO_BITMAP *frame =
@@ -436,7 +640,4 @@ void _susu_update_position(Elements *self, int dx, int dy)
     hitbox->update_center_y(cy + dy);
 }
 
-void susu_interact(Elements *self)
-{
-    (void)self;
-}
+void susu_interact(Elements *self) {}

@@ -4,6 +4,8 @@
 #include "../data/ImageCenter.h"
 
 #include "../element/susu.h"
+#include "../element/bloodman.h"
+#include "../element/priest.h"
 #include "../element/hpbar.h"
 #include "../element/level_switch.h"
 #include "../element/monster_factory.h"
@@ -15,6 +17,8 @@
 #include <allegro5/allegro_ttf.h>
 #include <cstddef>
 #include <cstdio>
+
+//extern Element *get_current_player();
 
 /*------------------------------------------------------------
  *  建構 / 解構
@@ -278,16 +282,36 @@ void GameScene::UpdatePreviousInputs()
 void GameScene::InitializeElements()
 {
     // 跟 C 版一樣：只註冊 susu + HP bar
-    Elements *player = New_susu(Susu_L);
-    if (player)
-        RegisterElement(player);
+    // 現在改成：註冊 susu + bloodman + HP bar
 
+    // 角色1：susu
+    Elements *player1 = New_susu(Susu_L);
+    if (player1)
+        RegisterElement(player1);
+
+    // 角色2：bloodman
+    Elements *player2 = New_Bloodman(Bloodman_L);
+    if (player2)
+        RegisterElement(player2);
+
+    // ★ 角色3：priest（牧師）
+    Elements *player3 = New_priest(Priest_L);
+    if (player3)
+        RegisterElement(player3);
+
+    // 先用 susu 的血量初始化 HP bar，之後在 Hpbar_update 會跟著目前操控角色更新
     Elements *hpbar = nullptr;
-    if (player && player->entity)
+    if (player1 && player1->entity)
     {
-        susu *chara = static_cast<susu *>(player->entity);
+        susu *chara = static_cast<susu *>(player1->entity);
         hpbar = New_Hpbar(Hpbar_L, chara->base.full_hp, chara->base.hp);
     }
+    if (player2 && player2->entity)
+    {
+        Bloodman *chara = static_cast<Bloodman *>(player2->entity);
+        hpbar = New_Hpbar(Hpbar_L, chara->base.full_hp, chara->base.hp);
+    }
+
     if (hpbar)
         RegisterElement(hpbar);
 }
@@ -371,21 +395,49 @@ void GameScene::ReturnToMenuAfterStage()//susu *chara)
 
 void GameScene::UpdateLevelState()
 {
-    Elements *player = get_susu();
-    susu *chara      = nullptr;
-    if (player && player->entity)
-        chara = static_cast<susu *>(player->entity);
+    DataCenter *dc = DataCenter::get_instance();
 
-    // 只在還沒死、還沒贏的狀態下更新，避免重複判斷
-    if (!is_dead && !is_win)
+    // 判斷玩家血量
+    Elements *player = nullptr;
+
+    // 依目前操控角色（gControlledCharacter）決定要檢查哪一個角色
+    if (gControlledCharacter == 1)
+        player = get_susu();
+    else if (gControlledCharacter == 2)
+        player = get_bloodman();
+    else if (gControlledCharacter == 3)
+        player = get_priest();
+
+    Damageable *dmg = nullptr;
+    if (player && player->entity)
+        dmg = reinterpret_cast<Damageable *>(player->entity);
+    
+    // 判斷是否過關
+    if (is_over())
     {
         // 判斷是否過關
         if (is_over())
             is_win = true;
+    }
+    if (dmg && dmg->hp <= 0)
+        is_dead = true;
 
-        // 判斷玩家是否死亡
-        if (chara && chara->base.hp <= 0)
-            is_dead = true;
+    if(is_dead || is_win)
+    {
+        if (dc->key_state[ALLEGRO_KEY_ENTER])
+        {
+            dc->key_state[ALLEGRO_KEY_ENTER]= false;
+
+            // 回到主選單前，仍然傳入 susu（角色1）給 ReturnToMenuAfterStage
+            susu *chara = nullptr;
+            Elements *susu_ele = get_susu();
+            if (susu_ele && susu_ele->entity)
+                chara = static_cast<susu *>(susu_ele->entity);
+
+            ReturnToMenuAfterStage();
+            return;
+
+        }
     }
 }
 

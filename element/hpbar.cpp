@@ -38,8 +38,13 @@ Elements *New_Hpbar(int label,int full_hp, int now_hp)
 void Hpbar_update(Elements *self)
 {
     Hpbar *hp = static_cast<Hpbar *>(self->entity);
-    Elements *chara = get_susu();
-    hp->now_hp = ((Damageable *)chara->entity)->hp;
+    // ★ 改成抓「目前被操作的角色」
+    Elements *chara = get_current_player();
+    if (!chara || !chara->entity) return;
+
+    Damageable *dmg = reinterpret_cast<Damageable *>(chara->entity);
+    hp->now_hp  = dmg->hp;
+    hp->full_hp = dmg->full_hp;   // 如果兩隻角色 full_hp 不同，顯示才會正確
 }
 void _Hpbar_update_position(Elements *self, int dx, int dy)
 {
