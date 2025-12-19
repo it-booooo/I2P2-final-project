@@ -21,7 +21,7 @@ Elements *New_Earthquake(int label, int x, int y, int damage,int side)
     // setting derived object member
     if (!earthquake_img && !earthquake_img_failed)
     {
-        earthquake_img = al_load_bitmap("assets/image/earthquake.png");
+        earthquake_img = ImageCenter::get_instance()->get("assets/image/earthquake.png");
         if (!earthquake_img)
         {
             std::printf("[New_Earthquake] failed to load assets/image/earthquake.png\n");

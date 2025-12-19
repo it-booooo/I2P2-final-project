@@ -5,6 +5,7 @@
 #include "monster_factory.h"
 #include "allegro5/allegro_primitives.h"
 #include "susu.h"
+#include "../data/FontCenter.h"
 #include <cstdio>
 
 int level_no;
@@ -23,6 +24,7 @@ bool is_over()
 
 void Level_switch_Init(void)
 {
+    FontCenter::get_instance()->init();
     state = LVL_RUNNING;
     trans_timer = 0.0;
     level_no = 0; 

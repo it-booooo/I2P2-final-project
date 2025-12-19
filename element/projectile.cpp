@@ -14,7 +14,7 @@ Elements *New_Projectile(int label, int x, int y, int v)
     Projectile *entity = (Projectile *)malloc(sizeof(Projectile));
     Elements *pObj = New_Elements(label);
     // setting derived object member
-    entity->img = al_load_bitmap("assets/image/projectile.png");
+    entity->img = ImageCenter::get_instance()->get("assets/image/projectile.png");
     entity->width = al_get_bitmap_width(entity->img);
     entity->height = al_get_bitmap_height(entity->img);
     entity->x = x;
@@ -110,7 +110,7 @@ void Projectile_draw(Elements *self)
 void Projectile_destory(Elements *self)
 {
     Projectile *Obj = ((Projectile *)(self->entity));
-    al_destroy_bitmap(Obj->img);
+    // al_destroy_bitmap(Obj->img);
     delete Obj->hitbox;
     free(Obj);
 }

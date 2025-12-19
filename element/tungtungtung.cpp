@@ -34,7 +34,7 @@ Elements *New_tungtungtung(int label)
     for (int i = 0; i < 3; ++i) {
         char buffer[64];
         sprintf(buffer, "assets/image/tungtungtung_%s.png", state_string[i]);
-        entity->img[i] = al_load_bitmap(buffer);
+        entity->img[i] = ImageCenter::get_instance()->get(buffer);
     }
 
     /* 幾何資料 */
@@ -200,9 +200,9 @@ void tungtungtung_destory(Elements *self)
 {
     if (!self) return;
     tungtungtung *chara = static_cast<tungtungtung *>(self->entity);
-    for (int i = 0; i < 3; ++i) {
-        if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
-    }
+    // for (int i = 0; i < 3; ++i) {
+    //     if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
+    // }
     /* 釋放 hitbox 與物件本身 */
     delete chara->base.hitbox;
     free(chara);

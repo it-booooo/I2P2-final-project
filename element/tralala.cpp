@@ -35,7 +35,7 @@ Elements *New_tralala(int label)
     for (int i = 0; i < 3; ++i) {
         char buf[64];
         sprintf(buf, "assets/image/tralala_%s.png", state_string[i]);
-        entity->img[i] = al_load_bitmap(buf);
+        entity->img[i] = ImageCenter::get_instance()->get(buf);
     }
 
     entity->width  = al_get_bitmap_width (entity->img[0]);
@@ -147,7 +147,7 @@ void tralala_update(Elements *self)
             Earthquake *eq = reinterpret_cast<Earthquake *>(quake->entity);
 
             if (!waterwave_img && !waterwave_img_failed) {
-                waterwave_img = al_load_bitmap("assets/image/waterwave.png");
+                waterwave_img = ImageCenter::get_instance()->get("assets/image/waterwave.png");
                 if (!waterwave_img) {
                     std::printf("[tralala] failed to load assets/image/waterwave.png\n");
                     waterwave_img_failed = true;
@@ -197,8 +197,8 @@ void tralala_destory(Elements *self)
 {
     if (!self) return;
     tralala *chara = static_cast<tralala *>(self->entity);
-    for (int i = 0; i < 3; ++i)
-        if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
+    // for (int i = 0; i < 3; ++i)
+    //     if (chara->img[i]) al_destroy_bitmap(chara->img[i]);
     delete chara->base.hitbox;
     free(chara);
 }

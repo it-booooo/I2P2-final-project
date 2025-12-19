@@ -13,7 +13,7 @@ Elements *New_Teleport(int label)
     Elements &wrapper = *pObj;
     Teleport &obj = *entity;
     // setting derived object member
-    obj.img = al_load_bitmap("assets/image/teleport.png");
+    obj.img = ImageCenter::get_instance()->get("assets/image/teleport.png");
     obj.width = al_get_bitmap_width(obj.img);
     obj.height = al_get_bitmap_height(obj.img);
     obj.x = DataCenter::WIDTH - obj.width;
@@ -77,6 +77,6 @@ void Teleport_destory(Elements *self)
 {
     Elements &wrapper = *self;
     Teleport &Obj = *static_cast<Teleport *>(wrapper.entity);
-    al_destroy_bitmap(Obj.img);
+    // al_destroy_bitmap(Obj.img);
     free(wrapper.entity);
 }
