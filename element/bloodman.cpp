@@ -155,14 +155,7 @@ void bloodman_update(Elements *self)
     // ===================== STOP =====================
     if (chara->state == STOP)
     {
-        if (mstate.buttons & 1)
-        {
-            chara->state      = COMBAT;
-            chara->anime      = 0;
-            chara->anime_time = 20;
-            chara->new_proj   = false;
-        }
-        else if (DC->key_state[ALLEGRO_KEY_Q])
+        if (DC->key_state[ALLEGRO_KEY_Q])
         {
             // Q：扣除目前 50% 血量 + 開 10 秒吸血 buff（沒有投擲物）
             if (chara->q_timer <= 0 && chara->base.hp > 1)
@@ -231,14 +224,7 @@ void bloodman_update(Elements *self)
     // ===================== MOVE =====================
     else if (chara->state == MOVE)
     {
-        if (mstate.buttons & 1)
-        {
-            chara->state      = COMBAT;
-            chara->anime      = 0;
-            chara->anime_time = 20;
-            chara->new_proj   = false;
-        }
-        else if (DC->key_state[ALLEGRO_KEY_Q])
+        if (DC->key_state[ALLEGRO_KEY_Q])
         {
             if (chara->q_timer <= 0 && chara->base.hp > 1)
             {

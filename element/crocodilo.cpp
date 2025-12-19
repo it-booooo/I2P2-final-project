@@ -3,6 +3,7 @@
 #include "crocodilo.h"
 #include "susu.h"
 #include "atk.h"
+#include "damageable.h"
 #include "../scene/sceneManager.h"
 #include "../shapes/Rectangle.h"
 #include "../shapes/ShapeFactory.h"
@@ -50,13 +51,34 @@ Elements *New_crocodilo(int label)
     pD->width  = al_get_bitmap_width (pD->img[0]);
     pD->height = al_get_bitmap_height(pD->img[0]);
 
-    Elements *plE = get_susu();
-    susu     *pl  = plE ? (susu *)plE->entity : NULL;
-    do {
+    Elements   *player_ele = get_current_player();
+    Damageable *pl = NULL;
+    double px = 0.0, py = 0.0;
+
+    if (player_ele && player_ele->entity) {
+        pl = reinterpret_cast<Damageable *>(player_ele->entity);
+        if (pl->hitbox) {
+            px = pl->hitbox->center_x();
+            py = pl->hitbox->center_y();
+        }
+    }
+
+    while (true) {
         pD->x = rand() % (DataCenter::WIDTH  - pD->width );
         pD->y = rand() % (DataCenter::HEIGHT - pD->height);
-    } while (pl && fabs(pD->x - pl->x) < ARRIVE_EPSILON &&
-                   fabs(pD->y - pl->y) < ARRIVE_EPSILON);
+
+        if (!pl || !pl->hitbox) break;
+
+        float ex = pD->x + pD->width  * 0.5f;
+        float ey = pD->y + pD->height * 0.5f;
+
+        float dx = ex - (float)px;
+        float dy = ey - (float)py;
+        float dist = sqrtf(dx*dx + dy*dy);
+
+        if (dist >= ARRIVE_EPSILON) break;
+    }
+
 
     pD->base.hp     = 600;
     pD->base.side   = 1;
@@ -82,13 +104,17 @@ void crocodilo_update(Elements *self)
     crocodilo *ch = static_cast<crocodilo *>(self->entity);
     if (ch->cooldown > 0) ch->cooldown--;
 
-    Elements *plE = get_susu();          if (!plE) return;
-    susu     *pl  = static_cast<susu *>(plE->entity);
+    Elements *plE = get_current_player();
+    if (!plE || !plE->entity) return;
+
+    Damageable *pl = reinterpret_cast<Damageable *>(plE->entity);
+    if (!pl->hitbox) return;
 
     int cx = ch->x + ch->width  / 2,
         cy = ch->y + ch->height / 2;
-    int tx = pl->x + pl->width  / 2,
-        ty = pl->y + pl->height / 2;
+    int tx = (int)pl->hitbox->center_x(),
+        ty = (int)pl->hitbox->center_y();
+
     int dx = tx - cx,
         dy = ty - cy;
     float dist = sqrtf((float)dx * dx + (float)dy * dy);
@@ -160,24 +186,25 @@ static void _croco_bullet_update(Elements *self)
     if (cur->frames > 0) {
         cur->frames--;
 
-        Elements *plE = get_susu();
-        if (plE) {
-            susu *pl   = static_cast<susu *>(plE->entity);
-            Atk  *atk  = static_cast<Atk *>(self->entity);
+        Elements *plE = get_current_player();
+        if (plE && plE->entity) {
+            Damageable *pl = reinterpret_cast<Damageable *>(plE->entity);
+            Atk *atk = static_cast<Atk *>(self->entity);
 
-            int cx = atk->x + atk->width  / 2,
-                cy = atk->y + atk->height / 2;
-            int tx = pl->x + pl->width  / 2,
-                ty = pl->y + pl->height / 2;
-            int dx = tx - cx,
-                dy = ty - cy;
-            float dist = sqrtf((float)dx * dx + (float)dy * dy);
-            if (dist < 1.0f) dist = 1.0f;
+            if (pl->hitbox) {
+                int cx = atk->x + atk->width  / 2,
+                    cy = atk->y + atk->height / 2;
+                int tx = (int)pl->hitbox->center_x(),
+                    ty = (int)pl->hitbox->center_y();
+                int dx = tx - cx,
+                    dy = ty - cy;
+                float dist = sqrtf((float)dx * dx + (float)dy * dy);
+                if (dist < 1.0f) dist = 1.0f;
 
-            /* 維持既定速度大小（或直接使用常數 BULLET_SPEED） */
-            float speed = BULLET_SPEED;
-            atk->vx = speed * dx / dist;
-            atk->vy = speed * dy / dist;
+                float speed = BULLET_SPEED;
+                atk->vx = speed * dx / dist;
+                atk->vy = speed * dy / dist;
+            }
         }
     }
 

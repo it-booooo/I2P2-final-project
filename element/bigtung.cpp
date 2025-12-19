@@ -3,6 +3,7 @@
 #include "bigtung.h"
 #include "susu.h"              /* 提供 get_susu() 介面 */
 #include "combat.h"            /* 近戰攻擊矩形 */
+#include "damageable.h"
 #include "../scene/sceneManager.h"
 #include "../scene/gamescene.h" /* sceneManager.RegisterElement & Combat_L */
 #include "../shapes/Rectangle.h"
@@ -52,27 +53,35 @@ Elements *New_bigtung(int label)
     /* 個別冷卻計時器初始化 */
     obj.attack_timer = 0;
 
-    /* 避開出生點太靠近玩家 */
-    Elements *susu_elem = get_susu();
-    susu *player_ptr = nullptr;
-    bool need_retry = false;
-    if (susu_elem) {
-        Elements &susu_wrapper = *susu_elem;
-        player_ptr = static_cast<susu *>(susu_wrapper.entity);
+    /* 避開出生點太靠近「目前玩家」（susu / bloodman / priest 都適用） */
+    Elements   *player_ele = get_current_player();
+    Damageable *player     = nullptr;
+    double px = 0.0, py = 0.0;
+
+    if (player_ele && player_ele->entity) {
+        player = reinterpret_cast<Damageable *>(player_ele->entity);
+        if (player->hitbox) {
+            px = player->hitbox->center_x();
+            py = player->hitbox->center_y();
+        }
     }
-    do {
+
+    while (true) {
         obj.x = rand() % (DataCenter::WIDTH  - obj.width);
         obj.y = rand() % (DataCenter::HEIGHT - obj.height);
 
-        need_retry = false;
-        if (player_ptr) {
-            susu &player = *player_ptr;
-            if (fabs(obj.x - player.x) < ARRIVE_EPSILON &&
-                fabs(obj.y - player.y) < ARRIVE_EPSILON) {
-                need_retry = true;
-            }
-        }
-    } while (need_retry);
+        if (!player || !player->hitbox) break;
+
+        float ex = obj.x + obj.width  * 0.5f;
+        float ey = obj.y + obj.height * 0.5f;
+
+        float dx = ex - (float)px;
+        float dy = ey - (float)py;
+        float dist = std::sqrt(dx * dx + dy * dy);
+
+        if (dist >= ARRIVE_EPSILON) break;
+    }
+
 
     /* 依最終座標建立 hitbox */
     obj.base.hitbox = New_Rectangle(
@@ -106,18 +115,19 @@ void bigtung_update(Elements *self)
     /* 攻擊冷卻倒數 */
     if (chara.attack_timer > 0) chara.attack_timer--;
 
-    /* 透過單例 accessor 取得 susu */
-    Elements *susu_elem = get_susu();
-    if (!susu_elem) return;              /* 還沒生成 susu */
+    /* ★ 鎖定「目前玩家」 */
+    Elements *player_ele = get_current_player();
+    if (!player_ele || !player_ele->entity) return;
 
-    Elements &susu_wrapper = *susu_elem;
-    susu &target = *static_cast<susu *>(susu_wrapper.entity);
+    Damageable *target = reinterpret_cast<Damageable *>(player_ele->entity);
+    if (!target->hitbox) return;
 
     /* 1) 取得雙方中心點 */
     float cx = chara.x + chara.width  * 0.5f;
     float cy = chara.y + chara.height * 0.5f;
-    float tx = target.x + target.width  * 0.5f;
-    float ty = target.y + target.height * 0.5f;
+    float tx = (float)target->hitbox->center_x();
+    float ty = (float)target->hitbox->center_y();
+
 
     float dx = tx - cx;
     float dy = ty - cy;

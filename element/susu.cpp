@@ -447,6 +447,8 @@ void susu_update(Elements *self)
             chara->new_proj == false &&
             chara->q_timer <= 0)
         {
+            SoundCenter::get_instance()->play("assets/sound/atk_sound.wav",
+                                          ALLEGRO_PLAYMODE_ONCE);
             chara->q_timer = 60;
 
             float dx = DC->mouse.x - (chara->x + chara->width*0.5f);
@@ -579,14 +581,6 @@ void susu_draw(Elements *self)
         );
     }
 
-    //  改用 SoundCenter 播放攻擊音效
-    if (chara->state == ATK &&
-        chara->gif_status[chara->state] &&
-        chara->gif_status[chara->state]->display_index == 2)
-    {
-        SoundCenter::get_instance()->play("assets/sound/atk_sound.wav",
-                                          ALLEGRO_PLAYMODE_ONCE);
-    }
 }
 
 void susu_destroy(Elements *self)

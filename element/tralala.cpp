@@ -49,14 +49,35 @@ Elements *New_tralala(int label)
     entity->quake_timer  = 0;
 
     /* 避開出生點太靠近玩家 */
-    Elements *susu_elem = get_susu();
-    susu *player = susu_elem ? (susu *)susu_elem->entity : NULL;
-    do {
+    /* 避開出生點太靠近「目前玩家」 */
+    Elements   *player_ele = get_current_player();
+    Damageable *player = NULL;
+    double px = 0.0, py = 0.0;
+
+    if (player_ele && player_ele->entity) {
+        player = reinterpret_cast<Damageable *>(player_ele->entity);
+        if (player->hitbox) {
+            px = player->hitbox->center_x();
+            py = player->hitbox->center_y();
+        }
+    }
+
+    while (true) {
         entity->x = rand() % (DataCenter::WIDTH  - entity->width);
         entity->y = rand() % (DataCenter::HEIGHT - entity->height);
-    } while (player &&
-             fabs(entity->x - player->x) < ARRIVE_EPSILON &&
-             fabs(entity->y - player->y) < ARRIVE_EPSILON);
+
+        if (!player || !player->hitbox) break;
+
+        float ex = entity->x + entity->width  * 0.5f;
+        float ey = entity->y + entity->height * 0.5f;
+
+        float dx = ex - (float)px;
+        float dy = ey - (float)py;
+        float dist = sqrtf(dx*dx + dy*dy);
+
+        if (dist >= ARRIVE_EPSILON) break;
+    }
+
 
     entity->base.hitbox = New_Rectangle(entity->x,
                                              entity->y,
@@ -82,16 +103,18 @@ void tralala_update(Elements *self)
     if (chara->attack_timer > 0) chara->attack_timer--;
     if (chara->quake_timer  > 0) chara->quake_timer--;
 
-    Elements *susu_elem = get_susu();
-    if (!susu_elem) return;
+    Elements *player_ele = get_current_player();
+    if (!player_ele || !player_ele->entity) return;
 
-    susu *target = static_cast<susu *>(susu_elem->entity);
+    Damageable *target = reinterpret_cast<Damageable *>(player_ele->entity);
+    if (!target->hitbox) return;
 
     /* 中心點 */
     float cx = chara->x + chara->width  * 0.5f;
     float cy = chara->y + chara->height * 0.5f;
-    float tx = target->x + target->width  * 0.5f;
-    float ty = target->y + target->height * 0.5f;
+    float tx = (float)target->hitbox->center_x();
+    float ty = (float)target->hitbox->center_y();
+
 
     float dx = tx - cx;
     float dy = ty - cy;

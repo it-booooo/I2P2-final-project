@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "bloodman.h" 
+#include "susu.h"
 
 /* 陣營常數 */
 #define SIDE_PLAYER 0
@@ -119,27 +120,76 @@ void Atk_interact(Elements *self)
     Elements &wrapper = *self;
     Atk &atk = *static_cast<Atk *>(self->entity);
 
-    if (atk.x < -atk.width || atk.x > DataCenter::WIDTH + atk.width) {
+    // 超出邊界就刪
+    if (atk.x < -atk.width || atk.x > DataCenter::WIDTH + atk.width ||
+        atk.y < -atk.height || atk.y > DataCenter::HEIGHT + atk.height) {
         wrapper.dele = true;
         return;
     }
 
-    for (int j = 0; j < wrapper.inter_len; ++j) {
-        ElementVec vec = sceneManager.GetLabelElements(wrapper.inter_obj[j]);
-
+    // 先處理「環境」碰撞：Tree / Floor（不分陣營都會擋子彈）
+    const int env_labels[] = { Tree_L, Floor_L };
+    for (int j = 0; j < (int)(sizeof(env_labels)/sizeof(env_labels[0])); ++j) {
+        ElementVec vec = sceneManager.GetLabelElements(env_labels[j]);
         for (int i = 0; i < vec.len; ++i) {
             Elements *tar_ptr = vec.arr[i];
             if (!tar_ptr || !tar_ptr->entity) continue;
 
             Damageable &tar = *reinterpret_cast<Damageable *>(tar_ptr->entity);
-            Shape *tar_hit = tar.hitbox;
+            if (!tar.hitbox || !atk.hitbox) continue;
 
-            if (!tar_hit || !atk.hitbox) continue;
-            if (!tar_hit->overlap(*atk.hitbox)) continue;
+            if (tar.hitbox->overlap(*atk.hitbox)) {
+                wrapper.dele = true;
+                return;
+            }
+        }
+    }
 
-            if ((atk.side == SIDE_PLAYER && tar.side == SIDE_ENEMY) ||
-                (atk.side == SIDE_ENEMY  && tar.side == SIDE_PLAYER))
-            {
+    // =============================
+    // 1) 敵方子彈：只打「當前操控角色」
+    // =============================
+    if (atk.side == SIDE_ENEMY) {
+        Elements *cur = get_current_player();
+        if (!cur || !cur->entity) return;
+
+        Damageable &tar = *reinterpret_cast<Damageable *>(cur->entity);
+        if (!tar.hitbox || !atk.hitbox) return;
+
+        if (tar.hitbox->overlap(*atk.hitbox)) {
+            DealDamageIfPossible(cur, atk.damage);
+            wrapper.dele = true;
+        }
+        return;
+    }
+
+    // =============================
+    // 2) 玩家子彈：掃描所有敵人 labels
+    // =============================
+    const int enemy_labels[] = {
+        tungtungtung_L,
+        trippi_troppi_L,
+        capuccino_L,
+        bananini_L,
+        patapim_L,
+        tralala_L,
+        crocodilo_L,
+        bigtung_L
+        // 想打誰就加誰
+    };
+
+    for (int j = 0; j < (int)(sizeof(enemy_labels)/sizeof(enemy_labels[0])); ++j) {
+        ElementVec vec = sceneManager.GetLabelElements(enemy_labels[j]);
+        for (int i = 0; i < vec.len; ++i) {
+            Elements *tar_ptr = vec.arr[i];
+            if (!tar_ptr || !tar_ptr->entity) continue;
+
+            Damageable &tar = *reinterpret_cast<Damageable *>(tar_ptr->entity);
+            if (!tar.hitbox || !atk.hitbox) continue;
+
+            if (!tar.hitbox->overlap(*atk.hitbox)) continue;
+
+            // 只有玩家子彈打怪
+            if (tar.side == SIDE_ENEMY) {
                 DealDamageIfPossible(tar_ptr, atk.damage);
                 wrapper.dele = true;
                 return;
@@ -147,6 +197,7 @@ void Atk_interact(Elements *self)
         }
     }
 }
+
 
 /* --------------------------------------------------
  * Draw
@@ -183,29 +234,60 @@ void Atk_destory(Elements *self)
 /* --------------------------------------------------
  * Damage helper
  * --------------------------------------------------*/
+// 需要能用到 Bloodman / get_bloodman()
+
 void DealDamageIfPossible(Elements *target, int damage)
 {
-    if (!target) return;
-    Elements &tar = *target;
-    if (!tar.entity) return;
-    Damageable &dmg = *reinterpret_cast<Damageable *>(target->entity);
-    if (!dmg.hitbox) return;
+    if (!target || !target->entity) return;
 
-    dmg.hp -= damage;
+    // 先把 target 視為可被改寫的 realTarget（用來導正）
+    Elements *realTarget = target;
 
-    // 如果被打的是「怪物」（side == 1），而且 Bloodman 的 Q 吸血 buff 有開啟，就幫 Bloodman 回血
-    if (dmg.side == 1)   // 0 = 玩家, 1 = 怪物（依你 damageable.h 的註解）
+    // 先拿到傳入 target 的 Damageable
+    Damageable *td = reinterpret_cast<Damageable *>(realTarget->entity);
+    if (!td || !td->hitbox) return;
+
+    // ★導正：如果打到的是玩家(side==0)，就改成扣目前操控的角色
+    // 這能修正「外部還在用 get_susu() 當 target」造成的扣血錯誤
+    if (td->side == 0) {
+        Elements *cur = get_current_player();
+        if (cur && cur->entity && cur != realTarget) {
+            Damageable *cd = reinterpret_cast<Damageable *>(cur->entity);
+            if (cd && cd->hitbox && cd->side == 0) {
+                realTarget = cur;
+                td = cd; // ★同步換成 current player 的 Damageable
+            }
+        }
+    }
+
+    // 重新取得 Elements 參考（因為 realTarget 可能被換掉）
+    Elements &tar = *realTarget;
+
+    // ★ Bloodman 在 Q buff 期間：受擊傷害減半（只在「被打的人是 bloodman」時成立）
+    Elements *bm_ele = get_bloodman();
+    if (bm_ele == realTarget && bm_ele->entity)
     {
-        Elements *bm_ele = get_bloodman();       // 從 bloodman.cpp 的 singleton 取得 bloodman
-        if (bm_ele && bm_ele->entity)
+        Bloodman *bm = static_cast<Bloodman *>(bm_ele->entity);
+        if (bm->lifesteal_active)
         {
-            Bloodman *bm = static_cast<Bloodman *>(bm_ele->entity);
+            damage = (damage + 1) / 2; // ceil(damage/2)
+        }
+    }
 
+    // 扣血
+    td->hp -= damage;
+    if (td->hp < 0) td->hp = 0;
+
+    // 吸血：目標是怪(side==1) 才會幫 bloodman 補
+    if (td->side == 1)
+    {
+        Elements *bm_ele2 = get_bloodman();
+        if (bm_ele2 && bm_ele2->entity)
+        {
+            Bloodman *bm = static_cast<Bloodman *>(bm_ele2->entity);
             if (bm->lifesteal_active)
             {
-                // ★ 吸血量你可以調整：這裡示範吸 50% 傷害
                 int heal = damage / 2;
-
                 bm->base.hp += heal;
                 if (bm->base.hp > bm->base.full_hp)
                     bm->base.hp = bm->base.full_hp;
@@ -213,6 +295,8 @@ void DealDamageIfPossible(Elements *target, int damage)
         }
     }
 
-
-    if (dmg.hp <= 0) tar.dele = true;
+    // 死亡刪除
+    if (td->hp <= 0) tar.dele = true;
 }
+
+

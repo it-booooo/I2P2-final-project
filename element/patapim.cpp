@@ -1,7 +1,7 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_image.h>
 #include "patapim.h"
-#include "susu.h"
+#include "susu.h"              // 這份檔案已經不再用 get_susu() 也沒關係，你要留著也不影響
 #include "combat.h"
 #include "earthquake.h"
 #include "../scene/sceneManager.h"
@@ -12,6 +12,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
+
+// ★ 新增：為了用 Damageable + hitbox
+#include "damageable.h"
+
+// ★ 新增：告訴編譯器 get_current_player() 在別的檔案有定義
+Elements *get_current_player(void);
 
 #define CHASE_SPEED            3.0f
 #define ARRIVE_EPSILON         60.0f
@@ -46,25 +52,32 @@ Elements *New_patapim(int label)
     obj.attack_timer = 0;
     obj.quake_timer  = 0;
 
-    Elements *susu_elem = get_susu();
-    susu *player = nullptr;
-    if (susu_elem) {
-        Elements &susu_wrapper = *susu_elem;
-        player = static_cast<susu *>(susu_wrapper.entity);
+    // ✅ 改成避開「目前操控角色」而不是 susu
+    Elements   *player_ele = get_current_player();
+    Damageable *player = nullptr;
+    if (player_ele && player_ele->entity) {
+        player = reinterpret_cast<Damageable *>(player_ele->entity);
+        if (!player->hitbox) player = nullptr;
     }
 
-    bool overlap_player;
-    do {
+    while (true) {
         obj.x = std::rand() % (DataCenter::WIDTH  - obj.width);
         obj.y = std::rand() % (DataCenter::HEIGHT - obj.height);
-        overlap_player = false;
-        if (player) {
-            susu &player_ref = *player;
-            overlap_player =
-                std::fabs(obj.x - player_ref.x) < ARRIVE_EPSILON &&
-                std::fabs(obj.y - player_ref.y) < ARRIVE_EPSILON;
-        }
-    } while (overlap_player);
+
+        if (!player) break; // 沒玩家就不用避開
+
+        float ex = obj.x + obj.width  * 0.5f;
+        float ey = obj.y + obj.height * 0.5f;
+
+        float px = (float)player->hitbox->center_x();
+        float py = (float)player->hitbox->center_y();
+
+        float dx = ex - px;
+        float dy = ey - py;
+        float dist = std::sqrt(dx * dx + dy * dy);
+
+        if (dist >= ARRIVE_EPSILON) break;
+    }
 
     obj.base.hitbox = New_Rectangle(
         obj.x,
@@ -92,20 +105,22 @@ void patapim_update(Elements *self)
     if (chara.attack_timer > 0) chara.attack_timer--;
     if (chara.quake_timer  > 0) chara.quake_timer--;
 
-    Elements *susu_elem = get_susu();
-    if (!susu_elem) return;
+    // ✅ 改成鎖定「目前操控角色」的 hitbox 中心點
+    Elements *player_ele = get_current_player();
+    if (!player_ele || !player_ele->entity) return;
 
-    Elements &susu_wrapper = *susu_elem;
-    susu &target = *static_cast<susu *>(susu_wrapper.entity);
+    Damageable *target = reinterpret_cast<Damageable *>(player_ele->entity);
+    if (!target || !target->hitbox) return;
 
     float cx = chara.x + chara.width  * 0.5f;
     float cy = chara.y + chara.height * 0.5f;
-    float tx = target.x + target.width  * 0.5f;
-    float ty = target.y + target.height * 0.5f;
+    float tx = (float)target->hitbox->center_x();
+    float ty = (float)target->hitbox->center_y();
 
     float dx = tx - cx;
     float dy = ty - cy;
     float dist = std::sqrt(dx * dx + dy * dy);
+    if (dist < 1e-6f) dist = 1e-6f;
 
     if (dist > ARRIVE_EPSILON) {
         float vx = CHASE_SPEED * dx / dist;
