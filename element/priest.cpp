@@ -63,6 +63,20 @@ static void _pull_one_enemy_to(EnemyT *enemy, int tx, int ty)
 // ★ priest 單例
 static Elements *singleton_priest = NULL;
 
+static const float kPriestScale = 0.25f;
+static const float kPriestDrawOffsetX = 150.0f;
+
+static void _priest_get_draw_metrics(const priest *chara, float &draw_x, float &draw_y, float &draw_w, float &draw_h)
+{
+    const float sw = al_get_bitmap_width(chara->img);
+    const float sh = al_get_bitmap_height(chara->img);
+
+    draw_w = sw * kPriestScale;
+    draw_h = sh * kPriestScale;
+    draw_x = chara->x + kPriestDrawOffsetX;
+    draw_y = chara->y;
+}
+
 Elements *get_priest(void)
 {
     return singleton_priest;
@@ -174,12 +188,19 @@ Elements *New_priest(int label)
     entity->height = al_get_bitmap_height(entity->img);
     printf("priest width=%d, height=%d\n", entity->width, entity->height);
     entity->x = 300;
-    entity->y = DataCenter::HEIGHT - entity->height - 60;
+    const float spawn_h = entity->height * kPriestScale;
+    entity->y = DataCenter::HEIGHT - spawn_h - 60;
 
-    entity->base.hitbox = New_Rectangle(entity->x+200,
-                                        entity->y+50,
-                                        entity->x + entity->width-200,
-                                        entity->y + entity->height-50);
+    float draw_x;
+    float draw_y;
+    float draw_w;
+    float draw_h;
+    _priest_get_draw_metrics(entity, draw_x, draw_y, draw_w, draw_h);
+
+    entity->base.hitbox = New_Rectangle(draw_x,
+                                        draw_y,
+                                        draw_x + draw_w,
+                                        draw_y + draw_h);
 
     entity->base.hp      = 10000;
     entity->base.full_hp = 10000;
@@ -387,20 +408,22 @@ void priest_draw(Elements *self)
     //             ? ALLEGRO_FLIP_HORIZONTAL : 0
     //     );
     // }
-    const float scale = 0.25f;
+    float draw_x;
+    float draw_y;
+    float draw_w;
+    float draw_h;
+    _priest_get_draw_metrics(chara, draw_x, draw_y, draw_w, draw_h);
 
     const float sw = al_get_bitmap_width(chara->img);
     const float sh = al_get_bitmap_height(chara->img);
-    const float dw = sw * scale;
-    const float dh = sh * scale;
 
-    int flags = ((DC->mouse.x - (chara->x + dw * 0.5f)) > 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
+    int flags = ((DC->mouse.x - (draw_x + draw_w * 0.5f)) > 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
 
     al_draw_scaled_bitmap(
         chara->img,
         0, 0, sw, sh,          // 來源：整張圖
-        chara->x+150, chara->y,     // 目的地左上角
-        dw, dh,                 // 縮放後寬高
+        draw_x, draw_y,     // 目的地左上角
+        draw_w, draw_h,                 // 縮放後寬高
         flags
     );
 }
@@ -434,10 +457,16 @@ void _priest_update_position(Elements *self, int dx, int dy)
 {
     priest *chara = static_cast<priest *>(self->entity);
 
-    if (chara->x + chara->width*0.5 == 0   && dx < 0) dx = 0;
-    if (chara->x + chara->width*0.5 ==1800 && dx > 0) dx = 0;
-    if (chara->y + chara->height - 200 == 0 && dy < 0) dy = 0;
-    if (chara->y + chara->height == 1400    && dy > 0) dy = 0;
+    float draw_x;
+    float draw_y;
+    float draw_w;
+    float draw_h;
+    _priest_get_draw_metrics(chara, draw_x, draw_y, draw_w, draw_h);
+
+    if (draw_x + draw_w * 0.5f <= 0 && dx < 0)                 dx = 0;
+    if (draw_x + draw_w * 0.5f >= DataCenter::WIDTH && dx > 0) dx = 0;
+    if (draw_y <= 0 && dy < 0)                                 dy = 0;
+    if (draw_y + draw_h >= DataCenter::HEIGHT && dy > 0)       dy = 0;
 
     chara->x += dx;
     chara->y += dy;
